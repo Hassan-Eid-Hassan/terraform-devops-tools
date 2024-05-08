@@ -50,52 +50,48 @@ The project is organized into several modules and files:
 
 Customize the Terraform variables by modifying `terraform.tfvars` to suit your specific requirements. The `terraform.tfvars` file contains several variables that allow you to customize the AWS infrastructure:
 
-    - **General Values**
-        - `key_name`: Name of the SSH key pair to use for EC2 instances.
-        - `ssh_key_path`: Path to the private key file for SSH access.
-        - `ssh_cidr_blocks`: A list of CIDR blocks allowed to connect via SSH.
-        - `http_cidr_blocks`: A list of CIDR blocks allowed to connect via HTTP.
+- **General Values**
+    - `key_name`: Name of the SSH key pair to use for EC2 instances.
+    - `ssh_key_path`: Path to the private key file for SSH access.
+    - `ssh_cidr_blocks`: A list of CIDR blocks allowed to connect via SSH.
+    - `http_cidr_blocks`: A list of CIDR blocks allowed to connect via HTTP.
 
-    - **VPC Values**
-        - `vpc_name`: Name of the VPC.
-        - `igw_name`: Name of the internet gateway.
-        - `router_table_name`: Name of the route table.
-        - `vpc_cidr_block`: CIDR block for the VPC.
-        - `public_subnet_cidrs`: A list of CIDR blocks for public subnets.
-        - `private_subnet_cidrs`: A list of CIDR blocks for private subnets.
-        - `azs`: Availability zones to use.
+- **VPC Values**
+    - `vpc_name`: Name of the VPC.
+    - `igw_name`: Name of the internet gateway.
+    - `router_table_name`: Name of the route table.
+    - `vpc_cidr_block`: CIDR block for the VPC.
+    - `public_subnet_cidrs`: A list of CIDR blocks for public subnets.
+    - `private_subnet_cidrs`: A list of CIDR blocks for private subnets.
+    - `azs`: Availability zones to use.
 
-    - **Jenkins Values**
-        - `jenkins_instance_type`: EC2 instance type for Jenkins.
-        - `jenkins_ami_id`: AMI ID for Jenkins instance.
-        - `jenkins_instance_user`: Default username for SSH access.
+- **Jenkins Values**
+    - `jenkins_instance_type`: EC2 instance type for Jenkins.
+    - `jenkins_ami_id`: AMI ID for Jenkins instance.
+    - `jenkins_instance_user`: Default username for SSH access.
 
-    - **Nexus Values**
-        - `nexus_instance_type`: EC2 instance type for Nexus.
-        - `nexus_ami_id`: AMI ID for Nexus instance.
-        - `nexus_instance_user`: Default username for SSH access.
+- **Nexus Values**
+    - `nexus_instance_type`: EC2 instance type for Nexus.
+    - `nexus_ami_id`: AMI ID for Nexus instance.
+    - `nexus_instance_user`: Default username for SSH access.
 
-    - **EKS Values**
-        - `cluster_name`: Name of the EKS cluster.
-        - `eks_helper_node_name`: Name of the helper node for EKS.
-        - `eks_node_group_template_name`: Template name for EKS node groups.
-        - `node_group_name`: Name of the EKS node group.
-        - `eks_version`: Version of EKS to use.
-        - `helper_node_ami_id`: AMI ID for the helper node.
-        - `helper_instance_type`: EC2 instance type for the helper node.
-        - `node_group_instance_type`: List of EC2 instance types for node groups.
-        - `node_group_ami_id`: AMI ID for the node groups.
-        - `min_size`: Minimum number of nodes in the group.
-        - `max_size`: Maximum number of nodes in the group.
-        - `desired_size`: Desired number of nodes in the group.
-        - `disk_size`: Disk size in GB for the nodes.
-        - `capacity_type`: Capacity type for nodes (e.g., ON_DEMAND).
+- **EKS Values**
+    - `cluster_name`: Name of the EKS cluster.
+    - `eks_helper_node_name`: Name of the helper node for EKS.
+    - `eks_node_group_template_name`: Template name for EKS node groups.
+    - `node_group_name`: Name of the EKS node group.
+    - `eks_version`: Version of EKS to use.
+    - `helper_node_ami_id`: AMI ID for the helper node.
+    - `helper_instance_type`: EC2 instance type for the helper node.
+    - `node_group_instance_type`: List of EC2 instance types for node groups.
+    - `node_group_ami_id`: AMI ID for the node groups.
+    - `min_size`: Minimum number of nodes in the group.
+    - `max_size`: Maximum number of nodes in the group.
+    - `desired_size`: Desired number of nodes in the group.
+    - `disk_size`: Disk size in GB for the nodes.
+    - `capacity_type`: Capacity type for nodes (e.g., ON_DEMAND).
 
-    Customize these variables according to your requirements.
-
-## Configuration
-
-Customize the Terraform variables by modifying `terraform.tfvars` to suit your specific requirements. This includes settings for key pairs, instance types, AMIs, subnet CIDRs, and more.
+Customize these variables according to your requirements.
 
 ## Usage
 
