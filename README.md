@@ -46,9 +46,9 @@ The project is organized into several modules and files:
 3. Configure AWS credentials:
     - Make sure your AWS credentials are properly configured in your environment. You can use [AWS CLI](https://aws.amazon.com/cli/) or provide credentials via environment variables.
 
-4. Update `terraform.tfvars` with your desired configurations.
+## Configuration
 
-    The `terraform.tfvars` file contains several variables that allow you to customize the AWS infrastructure:
+Customize the Terraform variables by modifying `terraform.tfvars` to suit your specific requirements. The `terraform.tfvars` file contains several variables that allow you to customize the AWS infrastructure:
 
     - **General Values**
         - `key_name`: Name of the SSH key pair to use for EC2 instances.
