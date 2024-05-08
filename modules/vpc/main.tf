@@ -27,6 +27,7 @@ resource "aws_subnet" "public_subnet" {
     }
 }
 
+# Private subnet
 resource "aws_subnet" "private_subnet" {
     count             = length(var.private_subnet_cidrs)
     vpc_id            = aws_vpc.vpc.id
@@ -54,7 +55,7 @@ resource "aws_route_table" "route_table" {
         gateway_id = aws_internet_gateway.igw.id
     }
     tags = {
-        Name = "2nd Route Table"
+        Name = var.router_table_name
     }
 }
 

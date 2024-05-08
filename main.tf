@@ -1,13 +1,20 @@
 # VPC module
 module "vpc" {
   source = "./modules/vpc"
+  vpc_name = var.vpc_name
+  igw_name = var.igw_name
+  router_table_name = var.router_table_name
+  vpc_cidr_block = var.vpc_cidr_block
+  public_subnet_cidrs = var.public_subnet_cidrs
+  private_subnet_cidrs = var.private_subnet_cidrs
+  azs = var.azs
+
 }
 
 #Adding security group for EKS
-resource "aws_security_group" "allow_tls" {
+resource "aws_security_group" "eks_sg" {
   depends_on = [ module.vpc ]
-  name_prefix   = "allow_tls_"
-  description   = "Allow TLS inbound traffic"
+  name = "eks-security-group"
   vpc_id        = module.vpc.vpc_id
 
   ingress {
@@ -23,6 +30,10 @@ resource "aws_security_group" "allow_tls" {
       to_port     = 0
       protocol    = "-1"
       cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "EKS-SG"
   }
 }
 
@@ -92,26 +103,28 @@ resource "aws_security_group" "nexus_sg" {
 module "jenkins" {
   source = "./modules/jenkins"
   depends_on = [ aws_security_group.jenkins_sg, module.vpc ]
-  instance_type   = var.instance_type
-  ami_id          = var.ami_id
+  jenkins_instance_type   = var.jenkins_instance_type
+  jenkins_ami_id          = var.jenkins_ami_id
   key_name        = var.key_name
-  subnet_id       = module.vpc.public_subnet_id[0]
-  security_group_id = aws_security_group.jenkins_sg.id
-  vpc_id          = module.vpc.vpc_id
+  jenkins_subnet_id = module.vpc.public_subnet_id[0]
+  jenkins_security_group_id = aws_security_group.jenkins_sg.id
+  jenkins_vpc_id          = module.vpc.vpc_id
   ssh_key_path    = var.ssh_key_path
+  jenkins_instance_user = var.jenkins_instance_user
 }
 
 # Nexus module
 module "nexus" {
   source = "./modules/nexus"
   depends_on = [ aws_security_group.nexus_sg, module.vpc ]
-  instance_type   = var.instance_type
-  ami_id          = var.ami_id
+  nexus_instance_type   = var.nexus_instance_type
+  nexus_ami_id          = var.nexus_ami_id
   key_name        = var.key_name
-  subnet_id       = module.vpc.public_subnet_id[0]
-  security_group_id = aws_security_group.nexus_sg.id
-  vpc_id          = module.vpc.vpc_id
+  nexus_subnet_id       = module.vpc.public_subnet_id[0]
+  nexus_security_group_id = aws_security_group.nexus_sg.id
+  nexus_vpc_id          = module.vpc.vpc_id
   ssh_key_path    = var.ssh_key_path
+  nexus_instance_user = var.nexus_instance_user
 }
 
 # EKS module
@@ -129,5 +142,10 @@ module "eks" {
     max_size = var.max_size
     desired_size = var.desired_size
     key_name = var.key_name
-    security_group_id = aws_security_group.allow_tls.id
+    security_group_id = aws_security_group.eks_sg.id
+    node_group_ami_id = var.node_group_ami_id
+    disk_size = var.desired_size
+    capacity_type = var.capacity_type
+    eks_node_group_template_name = var.eks_node_group_template_name
+    eks_helper_node_name = var.eks_helper_node_name
 }

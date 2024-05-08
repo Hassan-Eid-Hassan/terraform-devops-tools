@@ -4,7 +4,7 @@ variable "cluster_name" {
 }
 
 variable "eks_version" {
-    description = "Key pair name for the EC2 instances"
+    description = "The EKS Cluster Kubernetes version."
     type        = string
 }
 
@@ -14,52 +14,79 @@ variable "subnet_ids" {
 }
 
 variable "helper_node_ami_id" {
-    description = "AMI ID for the EC2 instances"
+    description = "AMI ID for the EC2 instances."
     type        = string
-    default     = "ami-04b70fa74e45c3917"
+}
+
+variable "node_group_ami_id" {
+    description = "AMI ID for the EC2 instances."
+    type        = string
 }
 
 variable "key_name" {
-    description = "Key pair name for the EC2 instances"
+    description = "Key pair name for the EC2 instances."
     type        = string
 }
 
 variable "helper_instance_type" {
-    description = "Instance type for the EC2 instances"
+    description = "Instance type for the EC2 instances."
     type        = string
-    default     = "t2.micro"
 }
 
 variable "node_group_name" {
     type = string
-    description = "The name of the node group."
+    description = "The name of node group."
 }
 
 variable "node_group_instance_type" {
-    description = "Instance type for the EC2 instances"
+    description = "Instance type for the EC2 instances."
     type        = list(string)
-    default     = ["t2.small"]
 }
 
 variable "min_size" {
     type = number
-    description = "Minimum number of nodes in the node group."
+    description = "Minimum number of nodes in the node group, default are 2."
     default = 2
 }
 
 variable "max_size" {
     type = number
-    description = "Maximum number of nodes in the node group."
+    description = "Maximum number of nodes in the node group, default are 2."
     default = 2
 }
 
 variable "desired_size" {
     type = number
-    description = "Desired number of nodes in the node group."
+    description = "Desired number of nodes in the node group, default are 2."
     default = 2
 }
 
 variable "security_group_id" {
     type = string
-    description = "Security group ID for Jenkins instance"
+    description = "Security group ID for helper-node instance."
+}
+
+variable "disk_size" {
+    type = string
+    description = "Disk size in GiB for worker nodes."
+}
+
+variable "capacity_type" {
+    type = string
+    description = "Type of capacity associated with the EKS Node Group. Valid values: ON_DEMAND, SPOT."
+
+    validation {
+        condition = can(jsondecode(["ON_DEMAND", "SPOT"]), var.capacity_type)
+        error_message = "capacity_type must be either 'ON_DEMAND' or 'SPOT'."
+    }
+}
+
+variable "eks_node_group_template_name" {
+    type = string
+    description = "The name of eks node group template."
+}
+
+variable "eks_helper_node_name" {
+    type = string
+    description = "EKS helper node name."
 }

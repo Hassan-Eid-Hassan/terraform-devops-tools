@@ -1,9 +1,9 @@
 resource "aws_instance" "jenkins" {
-    ami           = var.ami_id
-    instance_type = var.instance_type
-    subnet_id     = var.subnet_id
+    ami           = var.jenkins_ami_id
+    instance_type = var.jenkins_instance_type
+    subnet_id     = var.jenkins_subnet_id
     key_name      = var.key_name
-    vpc_security_group_ids = [var.security_group_id]
+    vpc_security_group_ids = [var.jenkins_security_group_id]
 
     tags = {
         Name = "Jenkins"
@@ -11,7 +11,7 @@ resource "aws_instance" "jenkins" {
 
     connection {
         type        = "ssh"
-        user        = "ec2-user"
+        user        = var.jenkins_instance_user
         private_key = file(var.ssh_key_path)
         host        = aws_instance.jenkins.public_ip
     }

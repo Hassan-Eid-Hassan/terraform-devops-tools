@@ -1,9 +1,9 @@
 resource "aws_instance" "nexus" {
-    ami           = var.ami_id
-    instance_type = var.instance_type
-    subnet_id     = var.subnet_id
+    ami           = var.nexus_ami_id
+    instance_type = var.nexus_instance_type
+    subnet_id     = var.nexus_subnet_id
     key_name      = var.key_name
-    vpc_security_group_ids = [var.security_group_id]
+    vpc_security_group_ids = [var.nexus_security_group_id]
 
     tags = {
         Name = "Nexus"
@@ -11,7 +11,7 @@ resource "aws_instance" "nexus" {
 
     connection {
         type        = "ssh"
-        user        = "ec2-user"
+        user        = var.nexus_instance_user
         private_key = file(var.ssh_key_path)
         host        = aws_instance.nexus.public_ip
     }

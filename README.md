@@ -1,81 +1,133 @@
-# Terraform Project: Jenkins, EKS, and Nexus Infrastructure on AWS
+# AWS Infrastructure Provisioning with Terraform
 
-This Terraform project sets up a complete infrastructure on AWS, including Jenkins, EKS, and Nexus services. The infrastructure includes a VPC with two subnets, and places the Jenkins and Nexus instances in the same subnet. The EKS cluster contains one master and two worker nodes.
+This repository contains Terraform code for provisioning AWS infrastructure, including a VPC, Jenkins, Nexus, and EKS cluster. The configuration values can be customized using the `terraform.tfvars` file.
 
 ## Table of Contents
 
-- [Prerequisites](#prerequisites)
-- [Project Structure](#project-structure)
-- [Installation and Setup](#installation-and-setup)
+- [Introduction](#introduction)
+- [Navigation](#navigation)
+- [Setup Instructions](#setup-instructions)
+- [Configuration](#configuration)
 - [Usage](#usage)
-- [Cleaning Up](#cleaning-up)
+- [Security Considerations](#security-considerations)
 - [Contributing](#contributing)
-- [License](#license)
+- [Acknowledgments](#acknowledgments)
 
-## Prerequisites
+## Introduction
 
-- [Terraform](https://learn.hashicorp.com/tutorials/terraform/installing-cli) v1.0.0 or higher.
-- [AWS CLI](https://aws.amazon.com/cli/) configured with credentials and region.
-- An AWS account with the necessary permissions to deploy infrastructure.
-- An SSH key pair set up in AWS (you'll need the key name for the configuration).
+This project is designed to help you provision AWS infrastructure using Terraform. The setup includes a Virtual Private Cloud (VPC), Jenkins, Nexus, and an EKS cluster with node groups. All configurations are provided in the form of Terraform code.
 
-## Project Structure
+The project is organized into several modules and files:
 
-The project is structured as follows:
+- modules/: Contains Terraform modules for different parts of the infrastructure (e.g., VPC, EKS, Jenkins, Nexus).
+- main.tf: The main Terraform configuration file that defines the root module and ties together the various modules.
+- provider.tf: Configures the AWS provider with the region and credentials.
+- variables.tf: Defines input variables for the infrastructure configuration.
+- terraform.tfvars: Contains values for input variables, customizing the configuration for your environment.
+- outputs.tf: Defines output variables for useful information about the provisioned infrastructure.
 
-- `modules/`: Contains separate Terraform modules for each service (Jenkins, EKS, Nexus, and VPC).
-- `scripts/`: Contains installation scripts for Jenkins and Nexus.
-- `main.tf`: Main Terraform configuration file that references the modules.
-- `variables.tf`: Contains input variable definitions.
-- `outputs.tf`: Contains output variable definitions.
-- `terraform.tfvars`: Contains default values for input variables.
+## Navigation
 
-## Installation and Setup
+- **[VPC Module](modules/vpc)**: Contains the Terraform code for creating the VPC, subnets, and associated resources.
+- **[Jenkins Module](modules/jenkins)**: Contains the Terraform code for provisioning a Jenkins instance.
+- **[Nexus Module](modules/nexus)**: Contains the Terraform code for provisioning a Nexus instance.
+- **[EKS Module](modules/eks)**: Contains the Terraform code for creating the EKS cluster and associated resources.
 
-1. Clone this repository to your local machine.
+## Setup Instructions
 
+1. Clone the repository:
     ```shell
-    git clone <repository-url>
+    git clone https://github.com/Hassan-Eid-Hassan/terraform-devops-tools.git
+    cd terraform-devops-tools
     ```
 
-2. Change to the project directory.
+2. Install [Terraform](https://learn.hashicorp.com/tutorials/terraform/install-cli).
 
-    ```shell
-    cd <project-directory>
-    ```
+3. Configure AWS credentials:
+    - Make sure your AWS credentials are properly configured in your environment. You can use [AWS CLI](https://aws.amazon.com/cli/) or provide credentials via environment variables.
 
-3. Edit the `terraform.tfvars` file and update the values according to your AWS configuration, including the key name for SSH access.
+4. Update `terraform.tfvars` with your desired configurations.
 
-4. Initialize the Terraform project.
+    The `terraform.tfvars` file contains several variables that allow you to customize the AWS infrastructure:
 
+    - **General Values**
+        - `key_name`: Name of the SSH key pair to use for EC2 instances.
+        - `ssh_key_path`: Path to the private key file for SSH access.
+        - `ssh_cidr_blocks`: A list of CIDR blocks allowed to connect via SSH.
+        - `http_cidr_blocks`: A list of CIDR blocks allowed to connect via HTTP.
+
+    - **VPC Values**
+        - `vpc_name`: Name of the VPC.
+        - `igw_name`: Name of the internet gateway.
+        - `router_table_name`: Name of the route table.
+        - `vpc_cidr_block`: CIDR block for the VPC.
+        - `public_subnet_cidrs`: A list of CIDR blocks for public subnets.
+        - `private_subnet_cidrs`: A list of CIDR blocks for private subnets.
+        - `azs`: Availability zones to use.
+
+    - **Jenkins Values**
+        - `jenkins_instance_type`: EC2 instance type for Jenkins.
+        - `jenkins_ami_id`: AMI ID for Jenkins instance.
+        - `jenkins_instance_user`: Default username for SSH access.
+
+    - **Nexus Values**
+        - `nexus_instance_type`: EC2 instance type for Nexus.
+        - `nexus_ami_id`: AMI ID for Nexus instance.
+        - `nexus_instance_user`: Default username for SSH access.
+
+    - **EKS Values**
+        - `cluster_name`: Name of the EKS cluster.
+        - `eks_helper_node_name`: Name of the helper node for EKS.
+        - `eks_node_group_template_name`: Template name for EKS node groups.
+        - `node_group_name`: Name of the EKS node group.
+        - `eks_version`: Version of EKS to use.
+        - `helper_node_ami_id`: AMI ID for the helper node.
+        - `helper_instance_type`: EC2 instance type for the helper node.
+        - `node_group_instance_type`: List of EC2 instance types for node groups.
+        - `node_group_ami_id`: AMI ID for the node groups.
+        - `min_size`: Minimum number of nodes in the group.
+        - `max_size`: Maximum number of nodes in the group.
+        - `desired_size`: Desired number of nodes in the group.
+        - `disk_size`: Disk size in GB for the nodes.
+        - `capacity_type`: Capacity type for nodes (e.g., ON_DEMAND).
+
+    Customize these variables according to your requirements.
+
+## Configuration
+
+Customize the Terraform variables by modifying `terraform.tfvars` to suit your specific requirements. This includes settings for key pairs, instance types, AMIs, subnet CIDRs, and more.
+
+## Usage
+
+1. Initialize Terraform:
     ```shell
     terraform init
     ```
 
-## Usage
-
-After the project is initialized, you can plan and apply the deployment.
-
-- **Plan** the deployment to review the changes that will be made:
-
+2. Plan the changes:
     ```shell
-    terraform plan -var-file=terraform.tfvars
+    terraform plan
     ```
 
-- **Apply** the deployment to create the infrastructure:
-
+3. Apply the changes:
     ```shell
-    terraform apply -var-file=terraform.tfvars
+    terraform apply
     ```
 
-- Once the deployment is complete, you can use the output values to access your deployed services:
-    - Jenkins is available at `http://<jenkins-public-ip>:8080/`
-    - Nexus is available at `http://<nexus-public-ip>:8081/`
-    - Use the kubeconfig file provided in the outputs to access your EKS cluster.
+## Security Considerations
 
-## Cleaning Up
+- Ensure your AWS credentials are managed securely.
+- Limit access to resources using security groups and IAM policies.
+- Follow AWS best practices for securing your infrastructure.
 
-To remove the deployed infrastructure, you can destroy the Terraform deployment:
+## Contributing
 
-```shell
-terraform destroy -var-file=terraform.tfvars
+Contributions are welcome! Please follow these steps to contribute:
+
+1. Fork the repository.
+2. Create a new branch with your changes.
+3. Submit a pull request explaining your changes.
+
+## Acknowledgments
+
+Thank you for using this project! If you have any questions or feedback, feel free to open an issue in the repository. Your contributions and suggestions are always welcome.

@@ -1,14 +1,4 @@
-variable "instance_type" {
-    description = "Instance type for the EC2 instances"
-    type        = string
-    default     = "t2.medium"
-}
-
-variable "ami_id" {
-    description = "AMI ID for the EC2 instances"
-    type        = string
-    default     = "ami-04b70fa74e45c3917"
-}
+# General Variables
 
 variable "key_name" {
     description = "Key pair name for the EC2 instances"
@@ -23,63 +13,206 @@ variable "ssh_key_path" {
 variable "ssh_cidr_blocks" {
     description = "CIDR blocks for SSH access"
     type        = list(string)
-    default     = ["0.0.0.0/0"]
 }
 
 variable "http_cidr_blocks" {
     description = "CIDR blocks for HTTP access"
     type        = list(string)
-    default     = ["0.0.0.0/0"]
 }
 
-# EKS config
+# VPC Variables
+variable "vpc_name" {
+    type = string
+    description = "the name of VPC."
+}
+
+variable "igw_name" {
+    type = string
+    description = "the name of Internet gateway."
+}
+
+variable "router_table_name" {
+    type = string
+    description = "the name of Router Table."
+}
+
+variable "vpc_cidr_block" {
+    type = string
+    description = "CIDR block for the VPC."
+}
+
+variable "public_subnet_cidrs" {
+ type        = list(string)
+ description = "Public Subnet CIDR values"
+}
+ 
+variable "private_subnet_cidrs" {
+ type        = list(string)
+ description = "Private Subnet CIDR values"
+}
+
+variable "azs" {
+ type        = list(string)
+ description = "Availability Zones"
+}
+
+# jenkins Variables
+
+variable "jenkins_ami_id" {
+    type        = string
+    description = "AMI ID for the Jenkins instance."
+}
+
+variable "jenkins_instance_type" {
+    type = string
+    description = "Instance type for Jenkins instance."
+}
+
+
+variable "jenkins_subnet_id" {
+    type = string
+    description = "ID of the subnet for the Jenkins instance."
+}
+
+variable "jenkins_vpc_id" {
+    type = string
+    description = "VPC ID for the Jenkins instance"
+}
+
+variable "jenkins_security_group_id" {
+    type = string
+    description = "Security group ID for Jenkins instance."
+}
+
+variable "jenkins_instance_user" {
+    type = string
+    description = "The user in the instance to ssh using it."
+}
+
+# Nexus Variables
+
+variable "nexus_ami_id" {
+    type        = string
+    description = "AMI ID for the Nexus instance"
+}
+
+variable "nexus_instance_type" {
+    type = string
+    description = "Instance type for Nexus instance"
+    default = "t2.medium"
+}
+
+variable "nexus_subnet_id" {
+    type = string
+    description = "ID of the subnet for the Nexus instance"
+}
+
+variable "nexus_vpc_id" {
+    type = string
+    description = "VPC ID for the Nexus instance"
+}
+
+variable "nexus_security_group_id" {
+    type = string
+    description = "Security group ID for Nexus instance"
+}
+
+variable "nexus_instance_user" {
+    type = string
+    description = "The user in the instance to ssh using it."
+}
+
+# EKS Variables
+
 variable "cluster_name" {
     type = string
     description = "The name of the EKS cluster."
 }
 
 variable "eks_version" {
-    description = "Key pair name for the EC2 instances"
+    description = "The EKS Cluster Kubernetes version."
     type        = string
+}
+
+variable "subnet_ids" {
+    type = list(string)
+    description = "List of subnet IDs for the EKS cluster and node group."
 }
 
 variable "helper_node_ami_id" {
-    description = "AMI ID for the EC2 instances"
+    description = "AMI ID for the EC2 instances."
     type        = string
-    default     = "ami-04b70fa74e45c3917"
+}
+
+variable "node_group_ami_id" {
+    description = "AMI ID for the EC2 instances."
+    type        = string
 }
 
 variable "helper_instance_type" {
-    description = "Instance type for the EC2 instances"
+    description = "Instance type for the EC2 instances."
     type        = string
-    default     = "t2.micro"
 }
 
 variable "node_group_name" {
     type = string
-    description = "The name of the node group."
+    description = "The name of node group."
 }
 
 variable "node_group_instance_type" {
-    description = "Instance type for the EC2 instances"
+    description = "Instance type for the EC2 instances."
     type        = list(string)
-    default     = ["t2.small"]
 }
 
 variable "min_size" {
     type = number
-    description = "Minimum number of nodes in the node group."
+    description = "Minimum number of nodes in the node group, default are 2."
     default = 2
 }
 
 variable "max_size" {
     type = number
-    description = "Maximum number of nodes in the node group."
+    description = "Maximum number of nodes in the node group, default are 2."
     default = 2
 }
 
 variable "desired_size" {
     type = number
-    description = "Desired number of nodes in the node group."
+    description = "Desired number of nodes in the node group, default are 2."
     default = 2
+}
+
+variable "security_group_id" {
+    type = string
+    description = "Security group ID for helper-node instance."
+}
+
+variable "disk_size" {
+    type = string
+    description = "Disk size in GiB for worker nodes."
+}
+
+variable "capacity_type" {
+    type = string
+    description = "Type of capacity associated with the EKS Node Group. Valid values: ON_DEMAND, SPOT."
+
+    validation {
+        condition = can(jsondecode(["ON_DEMAND", "SPOT"]), var.capacity_type)
+        error_message = "capacity_type must be either 'ON_DEMAND' or 'SPOT'."
+    }
+}
+
+variable "node_group_instance_name" {
+    type = string
+    description = "The name of node group instance."
+}
+
+variable "eks_node_group_template_name" {
+    type = string
+    description = "The name of eks node group template."
+}
+
+variable "eks_helper_node_name" {
+    type = string
+    description = "EKS helper node name."
 }
