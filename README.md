@@ -1,5 +1,5 @@
 <h2 align="center">
-    <img src="https://media.licdn.com/dms/image/C4D12AQF3BC5EsIE_GQ/article-cover_image-shrink_720_1280/0/1604378518742?e=2147483647&v=beta&t=Pg5h7Dai90apcfagvy1N_IOj54p_S9hnMny3-R50NhA" alt="TerraformAWS Logo">
+    <img wide="500" src="https://media.licdn.com/dms/image/C4D12AQF3BC5EsIE_GQ/article-cover_image-shrink_720_1280/0/1604378518742?e=2147483647&v=beta&t=Pg5h7Dai90apcfagvy1N_IOj54p_S9hnMny3-R50NhA" alt="TerraformAWS Logo">
 </h2>
 <p align="center">
     <h1 align="center">Provisioning DevOps Tools and AWS Infrastructure with Terraform</h1>
@@ -8,6 +8,7 @@
     <img src="https://img.shields.io/github/license/Hassan-Eid-Hassan/terraform-devops-tools?logoColor=white&label=License&color=F44336" alt="License Badge">
     <img src="https://img.shields.io/github/last-commit/Hassan-Eid-Hassan/terraform-devops-tools?style=flat&logo=git&logoColor=white&color=FFFFFF" alt="Last Commit Badge">
     <img src="https://img.shields.io/github/languages/top/Hassan-Eid-Hassan/terraform-devops-tools?style=flat&color=000000" alt="Top Language Badge">
+    <img src="https://img.shields.io/github/languages/count/Hassan-Eid-Hassan/terraform-devops-tools?style=flat&color=000000" alt="Language Count Badge">
 </h3>
 
 <p align="left">
