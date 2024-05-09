@@ -1,6 +1,6 @@
-<h2 align="center">
-    <img wide="500" src="https://media.licdn.com/dms/image/C4D12AQF3BC5EsIE_GQ/article-cover_image-shrink_720_1280/0/1604378518742?e=2147483647&v=beta&t=Pg5h7Dai90apcfagvy1N_IOj54p_S9hnMny3-R50NhA" alt="TerraformAWS Logo">
-</h2>
+<h3 align="center">
+    <img src="https://media.licdn.com/dms/image/C4D12AQF3BC5EsIE_GQ/article-cover_image-shrink_720_1280/0/1604378518742?e=2147483647&v=beta&t=Pg5h7Dai90apcfagvy1N_IOj54p_S9hnMny3-R50NhA" alt="TerraformAWS Logo">
+</h3>
 <p align="center">
     <h1 align="center">Provisioning DevOps Tools and AWS Infrastructure with Terraform</h1>
 </p>
@@ -12,7 +12,7 @@
 </h3>
 
 <p align="left">
-    This project contains Terraform code for provisioning DevOps tools and AWS infrastructure, including a VPC, Jenkins, Nexus, and EKS cluster. The configuration values can be customized using the <strong>terraform.tfvars<strong> file. 
+    This project contains Terraform code for provisioning DevOps tools and AWS infrastructure, including a VPC, Jenkins, Nexus, and EKS cluster. The configuration values can be customized using the <strong>terraform.tfvars</strong> file. 
 </p>
 
 
