@@ -1,6 +1,19 @@
-# AWS Infrastructure Provisioning with Terraform
+<h2 align="center">
+    <img src="https://media.licdn.com/dms/image/C4D12AQF3BC5EsIE_GQ/article-cover_image-shrink_720_1280/0/1604378518742?e=2147483647&v=beta&t=Pg5h7Dai90apcfagvy1N_IOj54p_S9hnMny3-R50NhA" alt="TerraformAWS Logo">
+</h2>
+<p align="center">
+    <h1 align="center">Provisioning DevOps Tools and AWS Infrastructure with Terraform</h1>
+</p>
+<h3 align="center">
+    <img src="https://img.shields.io/github/license/Hassan-Eid-Hassan/terraform-devops-tools?logoColor=white&label=License&color=F44336" alt="License Badge">
+    <img src="https://img.shields.io/github/last-commit/Hassan-Eid-Hassan/terraform-devops-tools?style=flat&logo=git&logoColor=white&color=FFFFFF" alt="Last Commit Badge">
+    <img src="https://img.shields.io/github/languages/top/Hassan-Eid-Hassan/terraform-devops-tools?style=flat&color=000000" alt="Top Language Badge">
+</h3>
 
-This repository contains Terraform code for provisioning AWS infrastructure, including a VPC, Jenkins, Nexus, and EKS cluster. The configuration values can be customized using the `terraform.tfvars` file.
+<p align="left">
+    This project contains Terraform code for provisioning DevOps tools and AWS infrastructure, including a VPC, Jenkins, Nexus, and EKS cluster. The configuration values can be customized using the <strong>terraform.tfvars<strong> file. 
+</p>
+
 
 ## Table of Contents
 
@@ -15,14 +28,14 @@ This repository contains Terraform code for provisioning AWS infrastructure, inc
 
 ## Introduction
 
-This project is designed to help you provision AWS infrastructure using Terraform. The setup includes a Virtual Private Cloud (VPC), Jenkins, Nexus, and an EKS cluster with node groups. All configurations are provided in the form of Terraform code.
+This project is designed to help you provision DevOps tools and AWS infrastructure using Terraform on AWS. The setup includes a Virtual Private Cloud (VPC), Jenkins, Nexus, and an EKS cluster with node groups. All configurations are provided in the form of Terraform code.
 
 The project is organized into several modules and files:
 
-- modules/: Contains Terraform modules for different parts of the infrastructure (e.g., VPC, EKS, Jenkins, Nexus).
+- modules/: Contains Terraform modules for different parts of the DevOps tools and infrastructure (e.g., VPC, EKS, Jenkins, Nexus).
 - main.tf: The main Terraform configuration file that defines the root module and ties together the various modules.
 - provider.tf: Configures the AWS provider with the region and credentials.
-- variables.tf: Defines input variables for the infrastructure configuration.
+- variables.tf: Defines input variables for the DevOps tools and infrastructure configuration.
 - terraform.tfvars: Contains values for input variables, customizing the configuration for your environment.
 - outputs.tf: Defines output variables for useful information about the provisioned infrastructure.
 
@@ -48,7 +61,7 @@ The project is organized into several modules and files:
 
 ## Configuration
 
-Customize the Terraform variables by modifying `terraform.tfvars` to suit your specific requirements. The `terraform.tfvars` file contains several variables that allow you to customize the AWS infrastructure:
+Customize the Terraform variables by modifying `terraform.tfvars` to suit your specific requirements. The `terraform.tfvars` file contains several variables that allow you to customize the DevOps tools and AWS infrastructure:
 
 - **General Values**
     - `key_name`: Name of the SSH key pair to use for EC2 instances.
