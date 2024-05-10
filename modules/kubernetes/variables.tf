@@ -1,39 +1,79 @@
-variable "jenkins_ami_id" {
+variable "k8s_master_ami_id" {
+    description = "AMI ID for the Kubernetes master node."
     type        = string
-    description = "AMI ID for the Jenkins instance."
 }
 
-variable "jenkins_instance_type" {
-    type = string
-    description = "Instance type for Jenkins instance."
+variable "k8s_worker_ami_id" {
+    description = "AMI ID for the Kubernetes worker nodes."
+    type        = string
+}
+
+variable "k8s_master_instance_type" {
+    description = "Instance type for the Kubernetes master node."
+    type        = string
+}
+
+variable "k8s_worker_instance_type" {
+    description = "Instance type for the Kubernetes worker nodes."
+    type        = string
 }
 
 variable "key_name" {
-    type = string
-    description = "Key name for SSH access to the Jenkins instance."
-}
-
-variable "jenkins_subnet_id" {
-    type = string
-    description = "ID of the subnet for the Jenkins instance."
-}
-
-variable "jenkins_vpc_id" {
-    type = string
-    description = "VPC ID for the Jenkins instance"
-}
-
-variable "jenkins_security_group_id" {
-    type = string
-    description = "Security group ID for Jenkins instance."
+    description = "Key name for SSH access."
+    type        = string
 }
 
 variable "ssh_key_path" {
-    type = string
-    description = "Path to your private SSH key file."
+    description = "Path to the SSH private key file."
+    type        = string
 }
 
-variable "jenkins_instance_user" {
-    type = string
-    description = "The user in the instance to ssh using it."
+variable "k8s_master_instance_user" {
+    description = "SSH username for accessing the master node."
+    type        = string
+}
+
+variable "k8s_worker_instance_user" {
+    description = "SSH username for accessing the worker nodes."
+    type        = string
+}
+
+variable "k8s_master_subnet_id" {
+    description = "Subnet ID for the master node."
+    type        = string
+}
+
+variable "k8s_worker_subnet_id" {
+    description = "Subnet IDs for the worker nodes."
+    type        = list(string)
+}
+
+variable "k8s_master_security_group_id" {
+    description = "Security group ID for the master node."
+    type        = string
+}
+
+variable "k8s_worker_security_group_id" {
+    description = "Security group ID for the worker nodes."
+    type        = list(string)
+}
+
+variable "k8s_cluster_name" {
+    description = "Name for the Kubernetes cluster."
+    type        = string
+}
+
+variable "k8s_worker_min_capacity" {
+    description = "Minimum size for the worker auto-scaling group."
+    type        = number
+}
+
+variable "k8s_worker_max_capacity" {
+    description = "Maximum size for the worker auto-scaling group."
+    type        = number
+}
+
+variable "k8s_worker_desired_capacity" {
+    description = "Desired size for the worker auto-scaling group."
+    type        = number
 }

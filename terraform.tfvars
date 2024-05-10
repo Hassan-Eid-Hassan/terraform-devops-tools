@@ -42,3 +42,17 @@ max_size       = 2
 desired_size   = 2
 disk_size = "50"
 capacity_type = "ON_DEMAND"
+
+# Kubernetes Values
+
+  k8s_cluster_name = "testing-k8s"
+  k8s_master_ami_id = "ami-07caf09b362be10b8"
+  k8s_master_instance_type = "t2.small"
+  k8s_master_instance_user = "ec2-user"
+
+  k8s_worker_ami_id = "ami-07caf09b362be10b8"
+  k8s_worker_instance_type = "t2.small"
+  k8s_worker_instance_user = "ec2-user"
+  k8s_worker_min_capacity = "2"
+  k8s_worker_max_capacity = "2"
+  k8s_worker_desired_capacity = "2"

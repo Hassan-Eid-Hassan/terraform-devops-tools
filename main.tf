@@ -99,6 +99,92 @@ resource "aws_security_group" "nexus_sg" {
   }
 }
 
+resource "aws_security_group" "k8s_master_sg" {
+    name        = "${var.k8s_cluster_name}-master-sg"
+    description = "Security group for Kubernetes master node"
+
+    ingress {
+        from_port   = 22
+        to_port     = 22
+        protocol    = "tcp"
+        cidr_blocks = var.ssh_cidr_blocks
+    }
+
+    # Allow communication from worker nodes
+    ingress {
+        from_port   = 0
+        to_port     = 65535
+        protocol    = "tcp"
+        security_groups = [aws_security_group.k8s_worker_sg.id]
+    }
+
+    # Add other necessary ports (e.g., Kubernetes API server)
+    ingress {
+        from_port   = 6443
+        to_port     = 6443
+        protocol    = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]  # Adjust according to your network requirements
+    }
+
+    # Allow all outbound traffic
+    egress {
+        from_port = 0
+        to_port   = 0
+        protocol  = "-1"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+}
+
+resource "aws_security_group" "k8s_worker_sg" {
+    name        = "${var.k8s_cluster_name}-worker-sg"
+    description = "Security group for Kubernetes worker nodes"
+
+    ingress {
+        from_port   = 22
+        to_port     = 22
+        protocol    = "tcp"
+        cidr_blocks = var.ssh_cidr_blocks
+    }
+
+    # Allow communication from the master node and other worker nodes
+    ingress {
+        from_port   = 0
+        to_port     = 65535
+        protocol    = "tcp"
+        security_groups = [aws_security_group.k8s_master_sg.id, aws_security_group.k8s_worker_sg.id]
+    }
+
+    # Allow all outbound traffic
+    egress {
+        from_port = 0
+        to_port   = 0
+        protocol  = "-1"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+}
+
+# Kubernetes module
+module "Kubernetes" {
+  source = "./modules/kubernetes"
+  k8s_cluster_name = var.k8s_cluster_name
+  key_name = var.key_name
+  ssh_key_path = var.ssh_key_path
+  k8s_master_ami_id = var.k8s_master_ami_id
+  k8s_master_instance_type = var.k8s_master_instance_type
+  k8s_master_instance_user = var.k8s_master_instance_user
+  k8s_master_subnet_id = module.vpc.public_subnet_id[0]
+  k8s_master_security_group_id = aws_security_group.k8s_master_sg.id
+
+  k8s_worker_ami_id = var.k8s_worker_ami_id
+  k8s_worker_instance_type = var.k8s_worker_instance_type
+  k8s_worker_instance_user = var.k8s_worker_instance_user
+  k8s_worker_subnet_id = module.vpc.public_subnet_id[0]
+  k8s_worker_security_group_id = aws_security_group.k8s_worker_sg.id
+  k8s_worker_min_capacity = var.k8s_worker_min_capacity
+  k8s_worker_max_capacity = var.k8s_worker_max_capacity
+  k8s_worker_desired_capacity = var.k8s_worker_desired_capacity 
+}
+
 # Jenkins module
 module "jenkins" {
   source = "./modules/jenkins"
