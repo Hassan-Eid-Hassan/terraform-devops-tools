@@ -12,7 +12,7 @@
 </h3>
 
 <p align="left">
-    This project contains Terraform code for provisioning DevOps tools and AWS infrastructure, including a VPC, Jenkins, Nexus, and EKS cluster. The configuration values can be customized using the <strong>terraform.tfvars</strong> file. 
+    This project contains Terraform code for provisioning DevOps tools and AWS infrastructure, including a VPC, Jenkins, Nexus, Kubernetes, and EKS cluster. The configuration values can be customized using the <strong>terraform.tfvars</strong> file. 
 </p>
 
 
@@ -24,16 +24,17 @@
 - [Configuration](#configuration)
 - [Usage](#usage)
 - [Security Considerations](#security-considerations)
+- [Differences between EKS and Kubernetes Modules](#differences-between-eks-and-kubernetes-modules)
 - [Contributing](#contributing)
 - [Acknowledgments](#acknowledgments)
 
 ## Introduction
 
-This project is designed to help you provision DevOps tools and AWS infrastructure using Terraform on AWS. The setup includes a Virtual Private Cloud (VPC), Jenkins, Nexus, and an EKS cluster with node groups. All configurations are provided in the form of Terraform code.
+This project is designed to help you provision DevOps tools and AWS infrastructure using Terraform on AWS. The setup includes a Virtual Private Cloud (VPC), Jenkins, Nexus, Kubernetes, and an EKS cluster with node groups. All configurations are provided in the form of Terraform code.
 
 The project is organized into several modules and files:
 
-- modules/: Contains Terraform modules for different parts of the DevOps tools and infrastructure (e.g., VPC, EKS, Jenkins, Nexus).
+- modules/: Contains Terraform modules for different parts of the DevOps tools and infrastructure (e.g., VPC, EKS, Jenkins, Nexus, Kubernetes).
 - main.tf: The main Terraform configuration file that defines the root module and ties together the various modules.
 - provider.tf: Configures the AWS provider with the region and credentials.
 - variables.tf: Defines input variables for the DevOps tools and infrastructure configuration.
@@ -45,6 +46,7 @@ The project is organized into several modules and files:
 - **[VPC Module](modules/vpc)**: Contains the Terraform code for creating the VPC, subnets, and associated resources.
 - **[Jenkins Module](modules/jenkins)**: Contains the Terraform code for provisioning a Jenkins instance.
 - **[Nexus Module](modules/nexus)**: Contains the Terraform code for provisioning a Nexus instance.
+- **[Kubernetes Module](modules/kubernetes)**: Contains the Terraform code for creating a Kubernetes cluster.
 - **[EKS Module](modules/eks)**: Contains the Terraform code for creating the EKS cluster and associated resources.
 
 ## Setup Instructions
@@ -89,23 +91,57 @@ Customize the Terraform variables by modifying `terraform.tfvars` to suit your s
     - `nexus_ami_id`: AMI ID for Nexus instance.
     - `nexus_instance_user`: Default username for SSH access.
 
+- **Kubernetes Values**
+    - `k8s_cluster_name`: Name of the Kubernetes cluster.
+    - `k8s_master_ami_id`: AMI ID for the Kubernetes master node.
+    - `k8s_master_instance_type`: Instance type for the Kubernetes master node.
+    - `k8s_worker_ami_id`: AMI ID for the Kubernetes worker nodes.
+    - `k8s_worker_instance_type`: Instance type for the Kubernetes worker nodes.
+    - `k8s_worker_min_capacity`: Minimum size for the worker auto-scaling group.
+    - `k8s_worker_max_capacity`: Maximum size for the worker auto-scaling group.
+    - `k8s_worker_desired_capacity`: Desired size for the worker auto-scaling group.
+
 - **EKS Values**
-    - `cluster_name`: Name of the EKS cluster.
-    - `eks_helper_node_name`: Name of the helper node for EKS.
-    - `eks_node_group_template_name`: Template name for EKS node groups.
-    - `node_group_name`: Name of the EKS node group.
-    - `eks_version`: Version of EKS to use.
-    - `helper_node_ami_id`: AMI ID for the helper node.
-    - `helper_instance_type`: EC2 instance type for the helper node.
-    - `node_group_instance_type`: List of EC2 instance types for node groups.
-    - `node_group_ami_id`: AMI ID for the node groups.
-    - `min_size`: Minimum number of nodes in the group.
-    - `max_size`: Maximum number of nodes in the group.
-    - `desired_size`: Desired number of nodes in the group.
-    - `disk_size`: Disk size in GB for the nodes.
-    - `capacity_type`: Capacity type for nodes (e.g., ON_DEMAND).
+    - Similar to Kubernetes values, with additional EKS-specific parameters.
 
 Customize these variables according to your requirements.
+
+## Differences between EKS and Kubernetes Modules
+
+### EKS Module
+
+- **EKS (Elastic Kubernetes Service):** This module provisions and manages a Kubernetes cluster using Amazon EKS, a fully managed Kubernetes service provided by AWS.
+  
+  - **Features:**
+    - Fully managed service: AWS manages the Kubernetes control plane, ensuring high availability, scalability, and security.
+    - Simplified cluster management: EKS handles cluster deployment, scaling, and maintenance tasks, allowing users to focus on application development.
+    - Integration with AWS services: EKS seamlessly integrates with other AWS services, such as IAM for authentication, VPC for networking, and CloudWatch for monitoring.
+
+### Kubernetes Module
+
+- **Kubernetes:** This module provisions and manages a Kubernetes cluster using vanilla Kubernetes, an open-source container orchestration platform.
+  
+  - **Features:**
+    - Customizable control: Users have full control over the Kubernetes cluster, including the deployment, configuration, and management of the control plane and worker nodes.
+    - Flexibility: Since it's not tied to any specific cloud provider, vanilla Kubernetes can be deployed on any infrastructure, including on-premises servers or other cloud providers.
+    - Community support: Vanilla Kubernetes benefits from a large and active open-source community, providing a wide range of plugins, tools, and integrations.
+    - Customization: Users can customize and extend Kubernetes functionality using various plugins, operators, and extensions available in the Kubernetes ecosystem.
+
+### Comparison
+
+- **EKS:**
+  - Fully managed service by AWS.
+  - Streamlined deployment and management experience.
+  - Integrated with AWS services.
+  - Ideal for users who prefer a managed Kubernetes solution and want to leverage AWS's infrastructure and services.
+
+- **Kubernetes:**
+  - Self-managed Kubernetes cluster.
+  - Provides maximum flexibility and control over the cluster configuration.
+  - Can be deployed on any infrastructure.
+  - Suitable for users who require extensive customization or want to avoid vendor lock-in by using a cloud-agnostic solution.
+
+Choose between EKS and vanilla Kubernetes based on your specific requirements for management overhead, flexibility, and integration with other AWS services.
 
 ## Usage
 
