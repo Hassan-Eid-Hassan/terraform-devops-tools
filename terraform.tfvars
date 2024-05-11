@@ -1,58 +1,52 @@
 # General Values
 
-key_name       = ""
-ssh_key_path   = ""
-ssh_cidr_blocks = ["0.0.0.0/0"]
+key_name         = "Hassan-Eid"
+ssh_cidr_blocks  = ["0.0.0.0/0"]
 http_cidr_blocks = ["0.0.0.0/0"]
 
 # VPC Values
-vpc_name = "devopsToolsVpc"
-igw_name = "devopsToolsIgw"
-router_table_name = "devopsToolsRouterTable"
-vpc_cidr_block = "10.0.0.0/16"
-public_subnet_cidrs = ["10.0.1.0/24", "10.0.2.0/24"]
-private_subnet_cidrs = ["10.0.3.0/24", "10.0.4.0/24"]
-azs = ["us-east-1a", "us-east-1b"]
+vpc_name             = "devopsToolsVpc"
+igw_name             = "devopsToolsIgw"
+router_table_name    = "devopsToolsRouterTable"
+vpc_cidr_block       = "172.16.0.0/16"
+public_subnet_cidrs  = ["172.16.1.0/24", "172.16.2.0/24"]
+private_subnet_cidrs = ["172.16.3.0/24", "172.16.4.0/24"]
+azs                  = ["us-east-1a", "us-east-1b"]
 
 # Jenkins Values
 
 jenkins_instance_type   = "t2.medium"
 jenkins_ami_id          = "ami-07caf09b362be10b8"
-jenkins_instance_user = "ec2-user"
 
 # Nexus Values
 
 nexus_instance_type   = "t2.medium"
 nexus_ami_id          = "ami-07caf09b362be10b8"
-nexus_instance_user = "ec2-user"
 
 # EKS Values
 
-cluster_name = "testing"
-eks_helper_node_name = "testing-helper-node"
-eks_node_group_template_name = "testing-node-group-template"
-node_group_name = "testing-node-group"
-eks_version = "1.29"
-helper_node_ami_id = "ami-07caf09b362be10b8"
-helper_instance_type = "t2.micro"
-node_group_instance_type = ["t2.small"]
-node_group_ami_id = "ami-07caf09b362be10b8"
-min_size       = 1
-max_size       = 2
-desired_size   = 2
-disk_size = "50"
-capacity_type = "ON_DEMAND"
+eks_region_code                = "us-east-1"
+eks_cluster_name               = "testing-eks"
+eks_cluster_version            = "1.29"
+eks_helper_node_ami_id         = "ami-07caf09b362be10b8"
+eks_helper_instance_type       = "t2.medium"
+eks_node_group_instance_type   = ["t2.medium"]
+eks_node_group_min_size        = 1
+eks_node_group_max_size        = 2
+eks_node_group_desired_size    = 2
+eks_node_group_max_unavailable = 1
+eks_node_group_ami_id          = "ami-07caf09b362be10b8"
+eks_node_group_disk_size       = 30
+eks_node_group_capacity_type   = "ON_DEMAND"
 
 # Kubernetes Values
 
-  k8s_cluster_name = "testing-k8s"
-  k8s_master_ami_id = "ami-07caf09b362be10b8"
-  k8s_master_instance_type = "t2.small"
-  k8s_master_instance_user = "ec2-user"
+k8s_cluster_name = "testing-k8s"
+k8s_master_ami_id = "ami-07caf09b362be10b8"
+k8s_master_instance_type = "t2.medium"
 
-  k8s_worker_ami_id = "ami-07caf09b362be10b8"
-  k8s_worker_instance_type = "t2.small"
-  k8s_worker_instance_user = "ec2-user"
-  k8s_worker_min_capacity = "2"
-  k8s_worker_max_capacity = "2"
-  k8s_worker_desired_capacity = "2"
+k8s_worker_ami_id = "ami-07caf09b362be10b8"
+k8s_worker_instance_type = "t2.medium"
+k8s_worker_min_capacity = "3"
+k8s_worker_max_capacity = "3"
+k8s_worker_desired_capacity = "3"

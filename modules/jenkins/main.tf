@@ -1,31 +1,48 @@
+# Security group for Jenkins
+resource "aws_security_group" "jenkins_sg" {
+  vpc_id = var.jenkins_sg_vpc_id
+  name   = "jenkins-security-group"
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = -1
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = var.ssh_cidr_blocks
+  }
+  ingress {
+    from_port   = 8080
+    to_port     = 8080
+    protocol    = "tcp"
+    cidr_blocks = var.http_cidr_blocks
+  }
+
+  tags = {
+    Name = "Jenkins-SG"
+  }
+}
+
 resource "aws_instance" "jenkins" {
-    ami           = var.jenkins_ami_id
-    instance_type = var.jenkins_instance_type
-    subnet_id     = var.jenkins_subnet_id
-    key_name      = var.key_name
-    vpc_security_group_ids = [var.jenkins_security_group_id]
+  ami                    = var.jenkins_ami_id
+  instance_type          = var.jenkins_instance_type
+  subnet_id              = var.jenkins_subnet_id
+  key_name               = var.key_name
+  vpc_security_group_ids = [aws_security_group.jenkins_sg.id]
 
-    tags = {
-        Name = "Jenkins"
-    }
+  root_block_device {
+    volume_size = 30
+  }
 
-    connection {
-        type        = "ssh"
-        user        = var.jenkins_instance_user
-        private_key = file(var.ssh_key_path)
-        host        = aws_instance.jenkins.public_ip
-    }
+  tags = {
+    Name = "Jenkins"
+  }
 
-    # Provision Jenkins installation script
-    provisioner "file" {
-        source      = "${path.module}/jenkins_install.sh"
-        destination = "/tmp/jenkins_install.sh"
-    }
+  user_data = file("${path.module}/jenkins_install.sh")
 
-    provisioner "remote-exec" {
-        inline = [
-            "sudo sed -i 's/\r$//' /tmp/jenkins_install.sh",
-            "sudo bash /tmp/jenkins_install.sh"
-        ]
-    }
 }
