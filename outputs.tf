@@ -22,3 +22,9 @@ output "eks_endpoint" {
     value = module.eks.eks_endpoint
     description = "The endpoint for the EKS cluster."
 }
+
+# Output the public IP address of the Kubernetes master node
+output "k8s_master_public_ip" {
+    description = "Public IP address of the Kubernetes master node."
+    value       = module.Kubernetes.k8s_master_public_ip
+}
