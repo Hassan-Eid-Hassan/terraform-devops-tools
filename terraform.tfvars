@@ -1,6 +1,6 @@
 # General Values
 
-key_name         = "Hassan-Eid"
+key_name         = ""
 ssh_cidr_blocks  = ["0.0.0.0/0"]
 http_cidr_blocks = ["0.0.0.0/0"]
 

@@ -44,6 +44,8 @@ resource "aws_security_group" "eks_sg" {
   }
 }
 
+# Unhash that block if you wish to use aws_launch_template ->
+
 # resource "aws_launch_template" "eks_node_group_template" {
 #   depends_on = [aws_eks_cluster.eks]
 #   name       = "${var.eks_cluster_name}-node-group-template"
@@ -81,6 +83,8 @@ resource "aws_eks_node_group" "node_group" {
   capacity_type   = var.eks_node_group_capacity_type
   disk_size       = var.eks_node_group_disk_size
   instance_types  = var.eks_node_group_instance_type
+
+  # Unhash that block if you wish to use aws_launch_template ->
 
   # launch_template {
   #   id      = aws_launch_template.eks_node_group_template.id
