@@ -3,7 +3,7 @@ variable "jenkins_linux_distribution" {
   description = "Linux distribution for the Jenkins instance."
   
   validation {
-    condition = var.jenkins_linux_distribution != "ubuntu" || "aws-linux"
+    condition = var.jenkins_linux_distribution != "ubuntu" || var.jenkins_linux_distribution != "aws-linux"
     error_message = "The jenkins_linux_distribution value must be 'ubuntu' or 'aws-linux'"
   }
 }
