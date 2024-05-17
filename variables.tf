@@ -3,7 +3,7 @@ variable "nexus_linux_distribution" {
   description = "Linux distribution for the Nexus instance."
   
   validation {
-    condition = var.nexus_linux_distribution != "ubuntu" || "aws-linux"
+    condition = var.nexus_linux_distribution != "ubuntu" || var.nexus_linux_distribution != "aws-linux"
     error_message = "The nexus_linux_distribution value must be 'ubuntu' or 'aws-linux'"
   }
 }
