@@ -43,6 +43,6 @@ resource "aws_instance" "nexus" {
     Name = "Nexus"
   }
 
-  user_data = file("${path.module}/nexus_install.sh")
+  user_data = var.nexus_linux_distribution == "aws-linux" ? file("${path.module}/nexus_install_aws-linux.sh") : file("${path.module}/nexus_install_ubuntu.sh")
 
 }

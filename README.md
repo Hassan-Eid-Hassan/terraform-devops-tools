@@ -1,4 +1,4 @@
-<a href="https://www.sonatype.com/products/sonatype-nexus-repository">
+<a align="center" href="https://www.sonatype.com/products/sonatype-nexus-repository">
     <img align="center" width="780" src="https://repository.ow2.org/nexus/images/NexusRepoMngr_withSonatype@3x.png" alt="Nexus logo"> 
 </a>
 <p align="center">
@@ -17,9 +17,10 @@ This repository contains a Terraform module to deploy a Nexus server on AWS. The
 
 ## Features
 
+- **Multi Linux Distribution:** You can choose either to deploy Nexus on aws-linux or ubuntu.
 - **Automated Deployment:** Easily deploy Nexus on AWS EC2 instances.
 - **Configurable:** Customize instance type, AMI, and other parameters.
-- **Outputs:** Provides useful outputs such as public IP.
+- **Outputs:** Provides useful outputs such as public IP and DNS.
 
 ## Usage
 
@@ -34,35 +35,37 @@ provider "aws" {
 
 module "nexus" {
   source  = "Hassan-Eid-Hassan/tools/devops"
-  version = "1.0.0-nexus-aws"
-  nexus_instance_type = "nexus_instance_type"
-  nexus_ami_id        = "nexus_ami_id"
-  key_name            = "key_name"
-  nexus_subnet_id     = "subnet_id"
-  nexus_sg_vpc_id     = "vpc_id"
-  http_cidr_blocks    = "http_cidr_blocks"
-  ssh_cidr_blocks     = "ssh_cidr_blocks"
+  version = "1.1.0-nexus-aws"
+  nexus_instance_type      = "nexus_instance_type"
+  nexus_ami_id             = "nexus_ami_id" # Do not forget to use the AMI ID of the Linux distribution you choose
+  key_name                 = "key_name"
+  nexus_subnet_id          = "subnet_id"
+  nexus_sg_vpc_id          = "vpc_id"
+  http_cidr_blocks         = "http_cidr_blocks"
+  ssh_cidr_blocks          = "ssh_cidr_blocks"
+  nexus_linux_distribution = "aws-linux" or "ubuntu"
 }
 ```
 
 ## Input Variables
 
-| Variable Name       | Type   | Default      | Description                                        |
-|---------------------|--------|--------------|----------------------------------------------------|
-| nexus_ami_id        | string | -            | AMI ID for the Nexus instance                      |
-| nexus_instance_type | string | t2.medium    | Instance type for Nexus instance                   |
-| key_name            | string | -            | Key name for SSH access to the Nexus instance      |
-| nexus_subnet_id     | string | -            | ID of the subnet for the Nexus instance            |
-| nexus_sg_vpc_id     | string | -            | VPC ID for the Nexus Security group                |
-| ssh_cidr_blocks     | list   | -            | CIDR blocks for SSH access                         |
-| http_cidr_blocks    | list   | -            | CIDR blocks for HTTP access                        |
+| Variable Name            | Type   | Description                                        |
+|--------------------------|--------|----------------------------------------------------|
+| nexus_ami_id             | string | AMI ID for the Nexus instance                      |
+| nexus_instance_type      | string | Instance type for Nexus instance                   |
+| key_name                 | string | Key name for SSH access to the Nexus instance      |
+| nexus_subnet_id          | string | ID of the subnet for the Nexus instance            |
+| nexus_sg_vpc_id          | string | VPC ID for the Nexus Security group                |
+| ssh_cidr_blocks          | list   | CIDR blocks for SSH access                         |
+| http_cidr_blocks         | list   | CIDR blocks for HTTP access                        |
+| nexus_linux_distribution | string | Linux distribution for the Nexus instance          |
 
 ## Outputs
 
-| Output Name          | Description                             |
-|----------------------|-----------------------------------------|
-| nexus_instance_id    | ID of the Nexus EC2 instance            |
-| public_ip            | Public IP of the Nexus EC2 instance     |
+| Output Name          | Description                              |
+|----------------------|------------------------------------------|
+| nexus_public_ip      | Public IP of the Nexus EC2 instance      |
+| nexus_public_dns     | Public DNS of the Nexus EC2 instance     |
 
 ## Prerequisites
 

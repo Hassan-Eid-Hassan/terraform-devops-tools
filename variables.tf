@@ -1,3 +1,13 @@
+variable "nexus_linux_distribution" {
+  type        = string
+  description = "Linux distribution for the Nexus instance."
+  
+  validation {
+    condition = var.nexus_linux_distribution != "ubuntu" || "aws-linux"
+    error_message = "The nexus_linux_distribution value must be 'ubuntu' or 'aws-linux'"
+  }
+}
+
 variable "nexus_ami_id" {
   type        = string
   description = "AMI ID for the Nexus instance"
@@ -6,7 +16,6 @@ variable "nexus_ami_id" {
 variable "nexus_instance_type" {
   type        = string
   description = "Instance type for Nexus instance"
-  default     = "t2.medium"
 }
 
 variable "key_name" {
