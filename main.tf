@@ -43,6 +43,6 @@ resource "aws_instance" "jenkins" {
     Name = "Jenkins"
   }
 
-  user_data = file("${path.module}/jenkins_install.sh")
+  user_data = var.jenkins_linux_distribution == "aws-linux" ? file("${path.module}/jenkins_install_aws-linux.sh") : file("${path.module}/jenkins_install_ubuntu.sh")
 
 }

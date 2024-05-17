@@ -1,3 +1,13 @@
+variable "jenkins_linux_distribution" {
+  type        = string
+  description = "Linux distribution for the Jenkins instance."
+  
+  validation {
+    condition = var.jenkins_linux_distribution != "ubuntu" || "aws-linux"
+    error_message = "The jenkins_linux_distribution value must be 'ubuntu' or 'aws-linux'"
+  }
+}
+
 variable "jenkins_ami_id" {
   type        = string
   description = "AMI ID for the Jenkins instance."

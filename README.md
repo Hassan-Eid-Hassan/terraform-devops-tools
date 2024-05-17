@@ -1,4 +1,4 @@
-<a href="https://jenkins.io">
+<a align="center" href="https://jenkins.io">
     <img align="center" width="500" src="https://www.jenkins.io/images/jenkins-logo-title-dark.svg" alt="Jenkins logo"> 
 </a>
 <p align="center">
@@ -17,9 +17,10 @@ This repository contains a Terraform module to deploy a Jenkins server on AWS. T
 
 ## Features
 
+- **Multi Linux Distribution:** You can choose either to deploy Jenkins on aws-linux or ubuntu.
 - **Automated Deployment:** Easily deploy Jenkins on AWS EC2 instances.
 - **Configurable:** Customize instance type, AMI, and other parameters.
-- **Outputs:** Provides useful outputs such as public IP.
+- **Outputs:** Provides useful outputs such as public IP and DNS.
 
 ## Usage
 
@@ -34,35 +35,37 @@ provider "aws" {
 
 module "jenkins" {
   source  = "Hassan-Eid-Hassan/tools/devops"
-  version = "1.0.0-jenkins-aws"
-  jenkins_instance_type = "jenkins_instance_type"
-  jenkins_ami_id        = "jenkins_ami_id"
-  key_name              = "key_name"
-  jenkins_subnet_id     = "subnet_id"
-  jenkins_sg_vpc_id     = "vpc_id"
-  http_cidr_blocks      = "http_cidr_blocks"
-  ssh_cidr_blocks       = "ssh_cidr_blocks"
+  version = "1.1.0-jenkins-aws"
+  jenkins_instance_type      = "jenkins_instance_type"
+  jenkins_ami_id             = "jenkins_ami_id" # Do not forget to use the AMI ID of the Linux distribution you choose
+  key_name                   = "key_name"
+  jenkins_subnet_id          = "subnet_id"
+  jenkins_sg_vpc_id          = "vpc_id"
+  http_cidr_blocks           = "http_cidr_blocks"
+  ssh_cidr_blocks            = "ssh_cidr_blocks"
+  jenkins_linux_distribution = "aws-linux" or "ubuntu"
 }
 ```
 
 ## Input Variables
 
-| Variable Name          | Type          | Description                                          |
-|------------------------|---------------|------------------------------------------------------|
-| jenkins_ami_id         | string        | AMI ID for the Jenkins instance                      |
-| jenkins_instance_type  | string        | Instance type for Jenkins instance                   |
-| key_name               | string        | Key name for SSH access to the Jenkins instance      |
-| jenkins_subnet_id      | string        | ID of the subnet for the Jenkins instance            |
-| jenkins_sg_vpc_id      | string        | VPC ID for the Jenkins Security group                |
-| ssh_cidr_blocks        | list(string)  | CIDR blocks for SSH access                           |
-| http_cidr_blocks       | list(string)  | CIDR blocks for HTTP access                          |
+| Variable Name               | Type          | Description                                          |
+|-----------------------------|---------------|------------------------------------------------------|
+| jenkins_ami_id              | string        | AMI ID for the Jenkins instance                      |
+| jenkins_instance_type       | string        | Instance type for Jenkins instance                   |
+| key_name                    | string        | Key name for SSH access to the Jenkins instance      |
+| jenkins_subnet_id           | string        | ID of the subnet for the Jenkins instance            |
+| jenkins_sg_vpc_id           | string        | VPC ID for the Jenkins Security group                |
+| ssh_cidr_blocks             | list(string)  | CIDR blocks for SSH access                           |
+| http_cidr_blocks            | list(string)  | CIDR blocks for HTTP access                          |
+| jenkins_linux_distribution  | string        | Linux distribution for the Jenkins instance          |
 
 ## Outputs
 
 | Output Name          | Description                              |
 |----------------------|------------------------------------------|
-| jenkins_instance_id  | ID of the Jenkins EC2 instance           |
-| public_ip            | Public IP of the Jenkins EC2 instance    |
+| jenkins_public_ip    | Public IP of the Jenkins EC2 instance    |
+| jenkins_public_dns   | Public DNS of the Jenkins EC2 instance   |
 
 ## Prerequisites
 
