@@ -21,13 +21,21 @@ The architecture of the Kubernetes cluster on AWS includes the following compone
 <h5 align="center">
     <img width="900" src="https://github.com/Hassan-Eid-Hassan/terraform-devops-tools/blob/kubernetes-module/k8s.svg" alt="Architecture">
 </h5>
-
- - **S3 Bucket:** Used for storing join command for worker and master.
- - **IAM Roles and Policies:** To provide necessary permissions for Kubernetes nodes to access S3.
- - **Security Groups:** To control network traffic to and from the Kubernetes nodes.
- - **Network Load Balancer:** Ensures high availability and distributes traffic across master nodes.
- - **EC2 Main Master Instance:** The frist Master node that will init the Kubernetes cluster.
- - **Autoscaling Groups:** Automatically manage the number of master and worker nodes based on defined policies.
+- **The Infrastructure:**
+     - **S3 Bucket:** Used for storing join command for worker and master.
+     - **IAM Roles and Policies:** To provide necessary permissions for Kubernetes nodes to access S3.
+     - **Security Groups:** To control network traffic to and from the Kubernetes nodes.
+     - **Network Load Balancer:** Ensures high availability and distributes traffic across master nodes.
+     - **EC2 Main Master Instance:** The frist Master node that will init the Kubernetes cluster.
+     - **Autoscaling Groups:** Automatically manage the number of master and worker nodes based on defined policies.
+     
+- **In Cluster Applications:**
+     - **Argocd:** Argo CD is a declarative, GitOps continuous delivery tool for Kubernetes.
+     - **SonarQube:** is a self-managed, automatic code review tool that systematically helps you deliver Clean Code.
+     - **EFK Stack:** The Elasticsearch-Filebeat-Kibana Stack helps by providing users with a powerful platform that collects and processes data from multiple data sources, stores that data in one centralized data store that can scale as data grows, and that provides a set of tools to analyze the data.
+     - **GPA Stack:** Grafana-Prometheus-Alertmanager stack are a popular open-source project providing complete monitoring and alerting solutions for Kubernetes clusters. It combines tools and components to create a monitoring stack for Kubernetes environments.
+     - **Traefik:** is a leading modern open source reverse proxy and **ingress controller** that makes deploying services and APIs easy. Traefik integrates with your existing infrastructure components and configures itself automatically and dynamically.
+     - **Jenkins:** an open source automation server which enables developers around the world to reliably build, test, and deploy their software.
 
 ### Single Master Node (k8s_number_of_master_nodes = 1)
 If you set k8s_number_of_master_nodes to 1, the cluster will have a single master node. This setup is simpler and more cost-effective but has limited fault tolerance. If the single master node fails, the entire cluster will become unavailable until the master node is restored.
@@ -38,6 +46,16 @@ For higher availability and fault tolerance, you can set k8s_number_of_master_no
  - **High Availability:** The cluster remains operational even if one or more master nodes fail.
  - **Load Balancing:** Traffic to the API server is distributed across multiple master nodes, improving performance.
  - **Etcd Cluster:** Multiple master nodes form an etcd cluster, providing data redundancy and consistency.
+
+## Notes
+
+- **Network Load Balancer:** will only create in HA mode, more then 1 master.
+- **In Cluster Applications:** the needed Application will be only create if it's value = `"true"`
+- **Traefik:** will create only in two cases, if you set it's value = `"true"` and if there is more than 1 master (HA mode).
+- **IgressRoute:** the IngressRoute will be create (but not applied) if Traefik created and you will find the mainfistes in `/root` and you should edit the host in this files to your Domain.
+
+**Don't forget to make your Domain route the traffic to Network Load Balancer (HA mode) or master node (none-HA mode).**
+**All the Applications uses `emptydir`, so if you wish to make your Data persist edit the files to use PV and PVC.**
 
 ## Usage
 
@@ -59,20 +77,20 @@ module "tools" {
   k8s_master_ami_id           = "ami-07caf09b362be10b8"
   k8s_master_subnet_id        = "public_subnet_id"
   k8s_master_instance_type    = "t2.large"
-  k8s_master_disk_size        = "100"
+  k8s_master_disk_size        = 100
   k8s_worker_ami_id           = "ami-07caf09b362be10b8"
   k8s_worker_instance_type    = "t2.xlarge"
   k8s_worker_subnet_id        = "public_subnet_id"
-  k8s_worker_min_capacity     = "6"
-  k8s_worker_max_capacity     = "8"
-  k8s_worker_desired_capacity = "6"
-  k8s_worker_disk_size        = "200"
+  k8s_worker_min_capacity     = 6
+  k8s_worker_max_capacity     = 8
+  k8s_worker_desired_capacity = 6
+  k8s_worker_disk_size        = 200
   http_cidr_blocks            = "0.0.0.0/0"
   ssh_cidr_blocks             = "0.0.0.0/0"
   public_subnet_cidrs         = "172.16.4.0/24"
   private_subnet_cidrs        = "172.16.5.0/24"
   k8s_region_code             = "us-west-2"
-  k8s_number_of_master_nodes  = "3"
+  k8s_number_of_master_nodes  = 3 # 1 for None-HA mode and more than 1 [3, 5, 7] for HA mode
   install_traefik             = "true"
   install_argocd              = "true"
   install_GPA                 = "true"
