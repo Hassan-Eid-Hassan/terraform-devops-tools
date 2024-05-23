@@ -18,6 +18,10 @@ This repository contains Terraform configurations to set up a highly available K
 ## Architecture
 The architecture of the Kubernetes cluster on AWS includes the following components:
 
+<h3 align="center">
+    <img src="https://github.com/Hassan-Eid-Hassan/terraform-devops-tools/blob/kubernetes-module/k8s.html" alt="Architecture">
+</h3>
+
  - **S3 Bucket:** Used for storing join command for worker and master.
  - **IAM Roles and Policies:** To provide necessary permissions for Kubernetes nodes to access S3.
  - **Security Groups:** To control network traffic to and from the Kubernetes nodes.
