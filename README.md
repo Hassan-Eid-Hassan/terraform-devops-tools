@@ -18,9 +18,9 @@ This repository contains Terraform configurations to set up a highly available K
 ## Architecture
 The architecture of the Kubernetes cluster on AWS includes the following components:
 
-<h5 align="center">
-    <img width="900" src="https://github.com/Hassan-Eid-Hassan/terraform-devops-tools/blob/kubernetes-module/k8s.svg" alt="Architecture">
-</h5>
+<a href="https://github.com/Hassan-Eid-Hassan/terraform-devops-tools/blob/kubernetes-module/k8s.svg">
+    <img width="900" src="https://github.com/Hassan-Eid-Hassan/terraform-devops-tools/blob/kubernetes-module/k8s.png" alt="Architecture">
+</a>
 
 - **The Infrastructure:**
      - **S3 Bucket:** Used for storing join command for worker and master.
