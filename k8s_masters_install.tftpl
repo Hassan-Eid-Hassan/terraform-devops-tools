@@ -1,9 +1,13 @@
 #!/bin/bash
 
-POD_NETWORK_URL="https://raw.githubusercontent.com/projectcalico/calico/v3.27.0/manifests/calico.yaml"
 K8S_REPO_URL="https://pkgs.k8s.io/core:/stable:/v1.30/rpm/"
 K8S_GPG_KEY="https://pkgs.k8s.io/core:/stable:/v1.30/rpm/repodata/repomd.xml.key"
 AUTO_HASH_SWAP="false"
+HOME="/root"
+
+# Workspace
+
+sudo cd $HOME
 
 # Step 1: Removing old versions...
 sudo yum remove docker docker-client docker-client-latest docker-common docker-latest docker-latest-logrotate docker-logrotate docker-engine podman runc kube* -y
@@ -67,17 +71,16 @@ sudo containerd config default > /etc/containerd/config.toml
 sudo sed -i 's#SystemdCgroup = false#SystemdCgroup = true#g' /etc/containerd/config.toml
 sudo systemctl restart containerd
 
-# initialize Kubernetes
-sudo kubeadm init --upload-certs
+# Join the cluster
+sleep 30 # just to ensure thet the master node created and uploaded the join command
 
-sudo mkdir -p ~/.kube
-sudo cp -i /etc/kubernetes/admin.conf ~/.kube/config
-sudo chown $(id -u):$(id -g) ~/.kube/config
-runuser -u root -- export KUBECONFIG=/etc/kubernetes/admin.conf
+INSTANCE_ID=$(TOKEN=`sudo curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600"` && sudo curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/instance-id)
+INSTANCE_NAME="${k8s_cluster_name}-master-$INSTANCE_ID"
+sudo aws ec2 create-tags --resources $INSTANCE_ID --tags Key=Name,Value=$INSTANCE_NAME --region ${k8s_region_code}
 
-# Function to apply Pod network
-runuser -u root -- kubectl apply -f $POD_NETWORK_URL
+sudo aws s3 cp s3://${k8s_cluster_name}-bucket/masters_join_command.sh /tmp/masters_join_command.sh
+runuser -u root -- sh /tmp/masters_join_command.sh
 
-# Fetch and print the join command
-sudo kubeadm token create --ttl 0 --print-join-command > /tmp/join_command.sh
-sudo aws s3 cp /tmp/join_command.sh s3://${k8s_cluster_name}-bucket/join_command.sh
+runuser -u root -- sudo mkdir -p $HOME/.kube
+runuser -u root -- sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+runuser -u root -- sudo chown $(id -u):$(id -g) $HOME/.kube/config

@@ -1,0 +1,371 @@
+#!/bin/bash
+
+POD_NETWORK_URL="https://raw.githubusercontent.com/projectcalico/calico/v3.28.0/manifests/calico.yaml"
+K8S_REPO_URL="https://pkgs.k8s.io/core:/stable:/v1.30/rpm/"
+K8S_GPG_KEY="https://pkgs.k8s.io/core:/stable:/v1.30/rpm/repodata/repomd.xml.key"
+AUTO_HASH_SWAP="false"
+HOME="/root"
+
+# Workspace
+
+sudo cd $HOME
+
+# Step 1: Removing old versions...
+sudo yum remove docker docker-client docker-client-latest docker-common docker-latest docker-latest-logrotate docker-logrotate docker-engine podman runc kube* -y
+
+# Step 2: Disabling SELinux...
+sudo setenforce 0
+sudo sed -i --follow-symlinks 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/sysconfig/selinux
+
+# Step 3: Setting bridged packets to traverse iptables rules...
+sudo cat <<EOF > /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+EOF
+
+sudo echo 1 > /proc/sys/net/ipv4/ip_forward
+sudo sysctl --system
+
+# Step 4: Disabling all memory swaps...
+sudo swapoff -a
+if [ $AUTO_HASH_SWAP == "true" ]; then sudo sed -i '/\sswap\s/s/^/#/' /etc/fstab; fi 
+# Please check any swap entries in /etc/fstab.
+
+# Step 5: Enabling transparent masquerading and VxLAN...
+sudo modprobe br_netfilter
+
+# install Docker
+sudo yum install -y yum-utils dnf iproute-tc wget
+sudo yum install -y docker
+sudo systemctl enable --now docker
+
+# configure Docker
+sudo cat <<EOF > /etc/docker/daemon.json
+{
+  "exec-opts": ["native.cgroupdriver=systemd"],
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "100m"
+  }
+}
+EOF
+
+sudo systemctl restart docker
+
+# install Kubernetes
+sudo cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=$K8S_REPO_URL
+enabled=1
+gpgcheck=0
+gpgkey=$K8S_GPG_KEY
+exclude=kubelet kubeadm kubectl cri-tools kubernetes-cni
+EOF
+
+sudo yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
+sudo systemctl enable --now kubelet
+
+# Configure containerd
+sudo mkdir -p /etc/containerd
+sudo containerd config default > /etc/containerd/config.toml
+sudo sed -i 's#SystemdCgroup = false#SystemdCgroup = true#g' /etc/containerd/config.toml
+sudo systemctl restart containerd
+
+# initialize Kubernetes
+if [ ${k8s_number_of_master_nodes} -gt 1 ]; then
+  sudo kubeadm init --control-plane-endpoint "${load_balancer_dns}:6443" --upload-certs
+else
+  sudo kubeadm init --upload-certs
+fi
+
+sleep 5
+runuser -u root -- sudo mkdir -p $HOME/.kube
+runuser -u root -- sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+runuser -u root -- sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+# Function to apply Pod network
+runuser -u root -- kubectl apply -f $POD_NETWORK_URL
+
+# Fetch and print the join command
+if [ ${k8s_number_of_master_nodes} -gt 1 ]; then
+  MASTERS_TOKEN=$(sudo kubeadm token create --ttl 0 --print-join-command)
+  MASTERS_CERT=$(sudo kubeadm init phase upload-certs --upload-certs | grep -vw -e certificate -e Namespace)
+  sudo echo "$MASTERS_TOKEN --control-plane --certificate-key $MASTERS_CERT" > /tmp/masters_join_command.sh
+  sudo aws s3 cp /tmp/masters_join_command.sh s3://${k8s_cluster_name}-bucket/masters_join_command.sh
+fi
+
+sudo kubeadm token create --ttl 0 --print-join-command > /tmp/worker_join_command.sh
+sudo aws s3 cp /tmp/worker_join_command.sh s3://${k8s_cluster_name}-bucket/worker_join_command.sh
+
+#########################################################################################################################
+# Add-on ################################################################################################################
+sleep 15
+
+#########################################################################################################################
+## Helm #################################################################################################################
+runuser -u root -- curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+runuser -u root -- chmod 700 get_helm.sh
+runuser -u root -- ./get_helm.sh
+
+#########################################################################################################################
+## Traefik ##############################################################################################################
+if [ ${k8s_number_of_master_nodes} -gt 1 -o ${install_traefik} == "true" ]; then
+  runuser -u root -- helm repo add traefik https://traefik.github.io/charts
+  runuser -u root -- helm repo update
+  runuser -u root -- helm install traefik -n traefik traefik/traefik --create-namespace
+  runuser -u root -- kubectl patch svc traefik -n traefik --type='json' -p='[{"op": "replace", "path": "/spec/ports/0/nodePort", "value": 32080}]'
+  runuser -u root -- kubectl patch svc traefik -n traefik --type='json' -p='[{"op": "replace", "path": "/spec/ports/1/nodePort", "value": 32443}]'
+  runuser -u root -- kubectl annotate svc traefik -n traefik "service.beta.kubernetes.io/aws-load-balancer-type"="nlb" "service.beta.kubernetes.io/aws-load-balancer-arn"="${load_balancer_arn}"
+fi
+#########################################################################################################################
+## ArgoCD ###############################################################################################################
+if [ ${install_argocd} == "true" ]; then
+  runuser -u root -- kubectl create namespace argocd
+  runuser -u root -- wget https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+  runuser -u root -- sed -i 's#        - /usr/local/bin/argocd-server#        - /usr/local/bin/argocd-server\n        - --insecure#' install.yaml
+  runuser -u root -- kubectl apply -f install.yaml --namespace argocd
+  runuser -u root -- kubectl delete networkpolicy --all -n argocd
+fi
+if [ ${k8s_number_of_master_nodes} -gt 1 -o ${install_traefik} == "true" ]; then
+sudo cat <<EOF | sudo tee /root/argocd-server-route.yaml
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: argocd-server-route
+  namespace: argocd
+spec:
+  entryPoints:
+    - web
+  routes:
+    - kind: Rule
+      match: Host(\`argocd.example.com\`)
+      services:
+        - name: argocd-server
+          port: 80
+EOF
+fi
+#########################################################################################################################
+## GPA (Grafana-Prometheus-Alertmanager) ################################################################################
+if [ ${install_GPA} == "true" ]; then
+  runuser -u root -- helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+  runuser -u root -- helm install gpa prometheus-community/kube-prometheus-stack --version 58.6.0 -n monitoring  --create-namespace
+fi
+if [ ${k8s_number_of_master_nodes} -gt 1 -o ${install_traefik} == "true" ]; then
+sudo cat <<EOF | sudo tee /root/grafana-route.yaml
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: grafana-route
+  namespace: monitoring
+spec:
+  entryPoints:
+    - web
+  routes:
+    - kind: Rule
+      match: Host(\`grafana.example.com\`)
+      services:
+        - name: gpa-grafana
+          port: 80
+EOF
+fi
+#########################################################################################################################
+## jenkins ##############################################################################################################
+if [ ${install_jenkins} == "true" ]; then
+runuser -u root -- kubectl create namespace jenkins
+sudo cat <<EOF | sudo tee /root/jenkins-manifests.yaml
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: jenkins-admin
+rules:
+  - apiGroups: [""]
+    resources: ["*"]
+    verbs: ["*"]
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: jenkins-admin
+  namespace: jenkins
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: jenkins-admin
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: jenkins-admin
+subjects:
+- kind: ServiceAccount
+  name: jenkins-admin
+  namespace: jenkins
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jenkins
+  namespace: jenkins
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jenkins-server
+  template:
+    metadata:
+      labels:
+        app: jenkins-server
+    spec:
+      securityContext:
+            fsGroup: 1000
+            runAsUser: 1000
+      serviceAccountName: jenkins-admin
+      containers:
+        - name: jenkins
+          image: jenkins/jenkins:lts
+          resources:
+            limits:
+              memory: "2Gi"
+              cpu: "1000m"
+            requests:
+              memory: "500Mi"
+              cpu: "500m"
+          ports:
+            - name: httpport
+              containerPort: 8080
+            - name: jnlpport
+              containerPort: 50000
+          livenessProbe:
+            httpGet:
+              path: "/login"
+              port: 8080
+            initialDelaySeconds: 90
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: "/login"
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          volumeMounts:
+            - name: jenkins-data
+              mountPath: /var/jenkins_home
+      volumes:
+        - name: jenkins-data
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jenkins-service
+  namespace: jenkins
+  annotations:
+      prometheus.io/scrape: 'true'
+      prometheus.io/path:   /
+      prometheus.io/port:   '8080'
+spec:
+  selector:
+    app: jenkins-server
+  type: ClusterIP
+  ports:
+    - port: 8080
+      targetPort: 8080
+EOF
+runuser -u root -- kubectl apply -f /root/jenkins-manifests.yaml --namespace jenkins
+fi
+if [ ${k8s_number_of_master_nodes} -gt 1 -o ${install_traefik} == "true" ]; then
+sudo cat <<EOF | sudo tee /root/jenkins-route.yaml
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: jenkins-route
+  namespace: jenkins
+spec:
+  entryPoints:
+    - web
+  routes:
+    - kind: Rule
+      match: Host(\`jenkins.example.com\`)
+      services:
+        - name: jenkins-service
+          port: 8080
+EOF
+fi
+#########################################################################################################################
+## Sonarqube ############################################################################################################
+if [ ${install_sonarqube} == "true" ]; then
+runuser -u root -- helm repo add sonarqube https://SonarSource.github.io/helm-chart-sonarqube
+runuser -u root -- helm repo update
+runuser -u root -- kubectl create namespace sonarqube
+runuser -u root -- helm upgrade --install -n sonarqube sonarqube sonarqube/sonarqube
+runuser -u root -- kubectl scale statefulset sonarqube-postgresql --replicas=0 -n sonarqube
+sleep 30
+runuser -u root -- kubectl get statefulset sonarqube-postgresql -n sonarqube -o yaml > /tmp/sonarqube-postgresql.yaml
+runuser -u root -- sed -i '/volumeClaimTemplates:/,/phase:/d' /tmp/sonarqube-postgresql.yaml
+runuser -u root -- awk '/volumes:/ && !f {print; print "      - emptyDir: {}\n        name: data"; f=1; next} 1' /tmp/sonarqube-postgresql.yaml > /tmp/sonarqube-postgresql-final.yaml
+runuser -u root -- sed -i 's#        - mountPath: /bitnami/postgresql#        - mountPath: /bitnami/postgresql/pgsql#' /tmp/sonarqube-postgresql-final.yaml
+runuser -u root -- kubectl delete statefulset sonarqube-postgresql -n sonarqube --cascade=orphan
+runuser -u root -- kubectl apply -f /tmp/sonarqube-postgresql-final.yaml -n sonarqube
+runuser -u root -- kubectl scale statefulset sonarqube-postgresql --replicas=1 -n sonarqube
+fi
+if [ ${k8s_number_of_master_nodes} -gt 1 -o ${install_traefik} == "true" ]; then
+sudo cat <<EOF | sudo tee /root/sonarqube-route.yaml
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: sonarqube-route
+  namespace: sonarqube
+spec:
+  entryPoints:
+    - web
+  routes:
+    - kind: Rule
+      match: Host(\`sonarqube.example.com\`)
+      services:
+        - name: sonarqube-sonarqube
+          port: 9000
+EOF
+fi
+#########################################################################################################################
+## EFK (Elasticsearch-Filebeat-Kibana) ##################################################################################
+if [ ${install_EFK} == "true" ]; then
+  runuser -u root -- helm repo add elastic https://helm.elastic.co
+  runuser -u root -- helm repo update
+  runuser -u root -- helm install elasticsearch elastic/elasticsearch --namespace elk-logging --create-namespace
+  sleep 15
+  runuser -u root -- kubectl scale statefulset elasticsearch-master --replicas=0 -n elk-logging
+  sleep 30
+  runuser -u root -- kubectl get statefulset elasticsearch-master -n elk-logging -o yaml > /tmp/elasticsearch-master.yaml
+  runuser -u root -- sed -i '/volumeClaimTemplates:/,/phase:/d' /tmp/elasticsearch-master.yaml
+  runuser -u root -- awk '/volumes:/ && !f {print; print "      - emptyDir: {}\n        name: elasticsearch-master"; f=1; next} 1' /tmp/elasticsearch-master.yaml > /tmp/elasticsearch-master-final.yaml
+  runuser -u root -- kubectl delete statefulset elasticsearch-master -n elk-logging --cascade=orphan
+  runuser -u root -- kubectl apply -f /tmp/elasticsearch-master-final.yaml -n elk-logging
+  runuser -u root -- kubectl scale statefulset elasticsearch-master --replicas=3 -n elk-logging
+  sleep 60
+  runuser -u root -- helm install kibana elastic/kibana --namespace elk-logging
+  runuser -u root -- helm install filebeat elastic/filebeat --namespace elk-logging
+fi
+if [ ${k8s_number_of_master_nodes} -gt 1 -o ${install_traefik} == "true" ]; then
+sudo cat <<EOF | sudo tee /root/kibana-route.yaml
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: kibana-route
+  namespace: elk-logging
+spec:
+  entryPoints:
+    - web
+  routes:
+    - kind: Rule
+      match: Host(\`kibana.example.com\`)
+      services:
+        - name: kibana-kibana
+          port: 5601
+EOF
+fi

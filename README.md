@@ -13,18 +13,31 @@
 
 ## Overview
 
-This repository contains a Terraform module to deploy a Kubernetes cluster on AWS. The module is located in the `kubernetes-module` branch and provides an easy way to set up and manage Kubernetes clusters.
+This repository contains Terraform configurations to set up a highly available Kubernetes cluster on AWS. The configuration includes creating necessary AWS resources such as S3 buckets, IAM roles and policies, security groups, load balancers, and EC2 instances for both master and worker nodes. It also provides options to install various Kubernetes tools such as ArgoCD, Grafana-Prometheus-Alertmanager stack, Jenkins, SonarQube, and the Elasticsearch-Filebeat-Kibana stack.
 
-## Features
+## Architecture
+The architecture of the Kubernetes cluster on AWS includes the following components:
 
-- **Automated Deployment:** Easily deploy a Kubernetes cluster on AWS EC2 instances.
-- **Configurable:** Customize instance types, worekr node count, and other parameters.
-- **Outputs:** Provides useful outputs such as Master Node IP.
-- **Worker Node Automation:** Automatically joins worker nodes to the Kubernetes cluster using kubeadm.
+ - **S3 Bucket:** Used for storing join command for worker and master.
+ - **IAM Roles and Policies:** To provide necessary permissions for Kubernetes nodes to access S3.
+ - **Security Groups:** To control network traffic to and from the Kubernetes nodes.
+ - **Network Load Balancer:** Ensures high availability and distributes traffic across master nodes.
+ - **EC2 Main Master Instance:** The frist Master node that will init the Kubernetes cluster.
+ - **Autoscaling Groups:** Automatically manage the number of master and worker nodes based on defined policies.
+
+### Single Master Node (k8s_number_of_master_nodes = 1)
+If you set k8s_number_of_master_nodes to 1, the cluster will have a single master node. This setup is simpler and more cost-effective but has limited fault tolerance. If the single master node fails, the entire cluster will become unavailable until the master node is restored.
+
+### Multiple Master Nodes (k8s_number_of_master_nodes > 1)
+For higher availability and fault tolerance, you can set k8s_number_of_master_nodes to a value greater than 1 (typically 3, 5, or 7). In this configuration:
+
+ - **High Availability:** The cluster remains operational even if one or more master nodes fail.
+ - **Load Balancing:** Traffic to the API server is distributed across multiple master nodes, improving performance.
+ - **Etcd Cluster:** Multiple master nodes form an etcd cluster, providing data redundancy and consistency.
 
 ## Usage
 
-To use this module, include it in your Terraform configuration as shown below. Make sure to specify the `kubernetes-module` branch.
+To use this module, include it in your Terraform configuration as shown below. Make sure to specify the `Hassan-Eid-Hassan/tools/devops` terraform registry.
 
 ### Example Configuration
 
@@ -35,46 +48,66 @@ provider "aws" {
 
 module "tools" {
   source  = "Hassan-Eid-Hassan/tools/devops"
-  version = "1.0.0-kubernetes-aws"
-  k8s_cluster_name            = "k8s_cluster_name"
+  version = "2.0.0-kubernetes-aws"
+  k8s_cluster_name            = "prod"
   key_name                    = "key_name"
   k8s_sg_vpc_id               = "vpc_id"
-  k8s_master_ami_id           = "k8s_master_ami_id"
-  k8s_master_subnet_id        = "subnet_id"
-  k8s_master_instance_type    = "k8s_master_instance_type"
-  k8s_worker_ami_id           = "k8s_worker_ami_id"
-  k8s_worker_instance_type    = "k8s_worker_instance_type"
-  k8s_worker_subnet_id        = "subnet_id"
-  k8s_worker_min_capacity     = "k8s_worker_min_capacity"
-  k8s_worker_max_capacity     = "k8s_worker_max_capacity"
-  k8s_worker_desired_capacity = "k8s_worker_desired_capacity"
-  http_cidr_blocks            = "http_cidr_blocks"
-  ssh_cidr_blocks             = "ssh_cidr_blocks"
-  public_subnet_cidrs         = "public_subnet_cidrs"
-  private_subnet_cidrs        = "private_subnet_cidrs"
+  k8s_master_ami_id           = "ami-07caf09b362be10b8"
+  k8s_master_subnet_id        = "public_subnet_id"
+  k8s_master_instance_type    = "t2.large"
+  k8s_master_disk_size        = "100"
+  k8s_worker_ami_id           = "ami-07caf09b362be10b8"
+  k8s_worker_instance_type    = "t2.xlarge"
+  k8s_worker_subnet_id        = "public_subnet_id"
+  k8s_worker_min_capacity     = "6"
+  k8s_worker_max_capacity     = "8"
+  k8s_worker_desired_capacity = "6"
+  k8s_worker_disk_size        = "200"
+  http_cidr_blocks            = "0.0.0.0/0"
+  ssh_cidr_blocks             = "0.0.0.0/0"
+  public_subnet_cidrs         = "172.16.4.0/24"
+  private_subnet_cidrs        = "172.16.5.0/24"
+  k8s_region_code             = "us-west-2"
+  k8s_number_of_master_nodes  = "3"
+  install_traefik             = "true"
+  install_argocd              = "true"
+  install_GPA                 = "true"
+  install_jenkins             = "false"
+  install_sonarqube           = "false"
+  install_EFK                 = "true"
 }
 ```
 
 ## Input Variables
 
-| Variable Name                 | Type          | Description                                        |
-|-------------------------------|---------------|----------------------------------------------------|
-| k8s_master_ami_id             | string        | AMI ID for the Kubernetes master node              |
-| k8s_worker_ami_id             | string        | AMI ID for the Kubernetes worker nodes             |
-| k8s_master_instance_type      | string        | Instance type for the Kubernetes master node       |
-| k8s_worker_instance_type      | string        | Instance type for the Kubernetes worker nodes      |
-| key_name                      | string        | Key name for SSH access                            |
-| k8s_master_subnet_id          | string        | Subnet ID for the master node                      |
-| k8s_worker_subnet_id          | string        | Subnet IDs for the worker nodes                    |
-| k8s_cluster_name              | string        | Name for the Kubernetes cluster                    |
-| k8s_worker_min_capacity       | number        | Minimum size for the worker auto-scaling group     |
-| k8s_worker_max_capacity       | number        | Maximum size for the worker auto-scaling group     |
-| k8s_worker_desired_capacity   | number        | Desired size for the worker auto-scaling group     |
-| k8s_sg_vpc_id                 | string        | VPC ID for the Kubernetes Cluster Security groups  |
-| ssh_cidr_blocks               | list(string)  | CIDR blocks for SSH access                         |
-| http_cidr_blocks              | list(string)  | CIDR blocks for HTTP access                        |
-| public_subnet_cidrs           | list(string)  | Public Subnet CIDR values                          |
-| private_subnet_cidrs          | list(string)  | Private Subnet CIDR values                         |
+| Variable Name                    | Type          | Description                                                                                     |
+|----------------------------------|---------------|-------------------------------------------------------------------------------------------------|
+| install_argocd                   | string        | Whether to install ArgoCD (true/false)                                                          |
+| install_GPA                      | string        | Whether to install Grafana-Prometheus-Alertmanager (true/false)                                 |
+| install_jenkins                  | string        | Whether to install Jenkins (true/false)                                                         |
+| install_sonarqube                | string        | Whether to install SonarQube (true/false)                                                       |
+| install_EFK                      | string        | Whether to install Elasticsearch-Filebeat-Kibana (true/false)                                   |
+| install_traefik                  | string        | Whether to install Traefik [Installed by default if number of masters more than 1] (true/false) |
+| k8s_region_code                  | string        | The region code of the Kubernetes cluster                                                       |
+| k8s_number_of_master_nodes       | number        | Number of Kubernetes masters nodes                                                              |
+| k8s_master_ami_id                | string        | AMI ID for the Kubernetes master node                                                           |
+| k8s_worker_ami_id                | string        | AMI ID for the Kubernetes worker nodes                                                          |
+| k8s_master_instance_type         | string        | Instance type for the Kubernetes master node                                                    |
+| k8s_worker_instance_type         | string        | Instance type for the Kubernetes worker nodes                                                   |
+| key_name                         | string        | Key name for SSH access                                                                         |
+| k8s_master_subnet_id             | list(string)  | Subnet IDs for the masters node                                                                 |
+| k8s_worker_subnet_id             | list(string)  | Subnet IDs for the workers nodes                                                                |
+| k8s_cluster_name                 | string        | Name for the Kubernetes cluster                                                                 |
+| k8s_worker_min_capacity          | number        | Minimum size for the worker auto-scaling group                                                  |
+| k8s_worker_max_capacity          | number        | Maximum size for the worker auto-scaling group                                                  |
+| k8s_worker_desired_capacity      | number        | Desired size for the worker auto-scaling group                                                  |
+| k8s_sg_vpc_id                    | string        | VPC ID for the Kubernetes Cluster Security groups                                               |
+| ssh_cidr_blocks                  | list(string)  | CIDR blocks for SSH access                                                                      |
+| http_cidr_blocks                 | list(string)  | CIDR blocks for HTTP access                                                                     |
+| public_subnet_cidrs              | list(string)  | Public Subnet CIDR values                                                                       |
+| private_subnet_cidrs             | list(string)  | Private Subnet CIDR values                                                                      |
+| k8s_worker_disk_size             | number        | Disk size in GiB for worker nodes                                                               |
+| k8s_master_disk_size             | number        | Disk size in GiB for master nodes                                                               |
 
 ## Outputs
 
