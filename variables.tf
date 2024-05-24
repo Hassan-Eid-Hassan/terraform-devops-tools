@@ -1,4 +1,5 @@
-# General Variables
+################################################################################
+# General Variables ############################################################
 
 variable "key_name" {
   description = "Key pair name for the EC2 instances"
@@ -15,7 +16,9 @@ variable "http_cidr_blocks" {
   type        = list(string)
 }
 
-# VPC Variables
+################################################################################
+# VPC Variables ################################################################
+
 variable "vpc_name" {
   type        = string
   description = "the name of VPC."
@@ -51,32 +54,55 @@ variable "azs" {
   description = "Availability Zones"
 }
 
-# jenkins Variables
+################################################################################
+# Jenkins Variables ############################################################
 
 variable "jenkins_ami_id" {
-    type        = string
-    description = "AMI ID for the Jenkins instance."
+  type        = string
+  description = "AMI ID for the Jenkins instance."
 }
 
 variable "jenkins_instance_type" {
-    type = string
-    description = "Instance type for Jenkins instance."
+  type        = string
+  description = "Instance type for Jenkins instance."
 }
 
-# Nexus Variables
+variable "jenkins_linux_distribution" {
+  type        = string
+  description = "Linux distribution for the Jenkins instance."
+
+  validation {
+    condition     = var.jenkins_linux_distribution != "ubuntu" || var.jenkins_linux_distribution != "aws-linux"
+    error_message = "The jenkins_linux_distribution value must be 'ubuntu' or 'aws-linux'"
+  }
+}
+
+################################################################################
+# Nexus Variables ##############################################################
 
 variable "nexus_ami_id" {
-    type        = string
-    description = "AMI ID for the Nexus instance"
+  type        = string
+  description = "AMI ID for the Nexus instance"
 }
 
 variable "nexus_instance_type" {
-    type = string
-    description = "Instance type for Nexus instance"
-    default = "t2.medium"
+  type        = string
+  description = "Instance type for Nexus instance"
+  default     = "t2.medium"
 }
 
-# EKS Variables
+variable "nexus_linux_distribution" {
+  type        = string
+  description = "Linux distribution for the Nexus instance."
+
+  validation {
+    condition     = var.nexus_linux_distribution != "ubuntu" || var.nexus_linux_distribution != "aws-linux"
+    error_message = "The nexus_linux_distribution value must be 'ubuntu' or 'aws-linux'"
+  }
+}
+
+################################################################################
+# EKS Variables ################################################################
 
 variable "eks_region_code" {
   type        = string
@@ -143,44 +169,127 @@ variable "eks_node_group_capacity_type" {
   description = "Type of capacity associated with the EKS Node Group. Valid values: ON_DEMAND, SPOT."
 }
 
-# Kubernetes Variables
+################################################################################
+# Kubernetes Variables #########################################################
+
+variable "k8s_master_disk_size" {
+  type        = number
+  description = "Disk size in GiB for master nodes."
+}
+
+variable "k8s_worker_disk_size" {
+  type        = number
+  description = "Disk size in GiB for worker nodes."
+}
 
 variable "k8s_master_ami_id" {
-    description = "AMI ID for the Kubernetes master node."
-    type        = string
+  description = "AMI ID for the Kubernetes master node."
+  type        = string
 }
 
 variable "k8s_worker_ami_id" {
-    description = "AMI ID for the Kubernetes worker nodes."
-    type        = string
+  description = "AMI ID for the Kubernetes worker nodes."
+  type        = string
 }
 
 variable "k8s_master_instance_type" {
-    description = "Instance type for the Kubernetes master node."
-    type        = string
+  description = "Instance type for the Kubernetes master node."
+  type        = string
 }
 
 variable "k8s_worker_instance_type" {
-    description = "Instance type for the Kubernetes worker nodes."
-    type        = string
+  description = "Instance type for the Kubernetes worker nodes."
+  type        = string
 }
 
 variable "k8s_cluster_name" {
-    description = "Name for the Kubernetes cluster."
-    type        = string
+  description = "Name for the Kubernetes cluster."
+  type        = string
 }
 
 variable "k8s_worker_min_capacity" {
-    description = "Minimum size for the worker auto-scaling group."
-    type        = number
+  description = "Minimum size for the worker auto-scaling group."
+  type        = number
 }
 
 variable "k8s_worker_max_capacity" {
-    description = "Maximum size for the worker auto-scaling group."
-    type        = number
+  description = "Maximum size for the worker auto-scaling group."
+  type        = number
 }
 
 variable "k8s_worker_desired_capacity" {
-    description = "Desired size for the worker auto-scaling group."
-    type        = number
+  description = "Desired size for the worker auto-scaling group."
+  type        = number
 }
+
+variable "k8s_region_code" {
+  type        = string
+  description = "The region code of the Kubernetes cluster."
+}
+
+variable "k8s_number_of_master_nodes" {
+  description = "Number of Kubernetes masters nodes."
+  type        = number
+
+  validation {
+    condition     = var.k8s_number_of_master_nodes != 1 || var.k8s_number_of_master_nodes != 3 || var.k8s_number_of_master_nodes != 5 || var.k8s_number_of_master_nodes != 7
+    error_message = "The k8s_number_of_master_nodes value must be in [1, 3, 5, 7]"
+  }
+}
+
+variable "install_argocd" {
+  description = "Whether to install ArgoCD"
+  type        = string
+  validation {
+    condition     = contains(["true", "false"], var.install_argocd)
+    error_message = "install_argocd must be 'true' or 'false'."
+  }
+}
+
+variable "install_GPA" {
+  description = "Whether to install Grafana-Prometheus-Alertmanager"
+  type        = string
+  validation {
+    condition     = contains(["true", "false"], var.install_GPA)
+    error_message = "install_GPA must be 'true' or 'false'."
+  }
+}
+
+variable "install_jenkins" {
+  description = "Whether to install Jenkins"
+  type        = string
+  validation {
+    condition     = contains(["true", "false"], var.install_jenkins)
+    error_message = "install_jenkins must be 'true' or 'false'."
+  }
+}
+
+variable "install_sonarqube" {
+  description = "Whether to install SonarQube"
+  type        = string
+  validation {
+    condition     = contains(["true", "false"], var.install_sonarqube)
+    error_message = "install_sonarqube must be 'true' or 'false'."
+  }
+}
+
+variable "install_EFK" {
+  description = "Whether to install Elasticsearch-Filebeat-Kibana"
+  type        = string
+  validation {
+    condition     = contains(["true", "false"], var.install_EFK)
+    error_message = "install_EFK must be 'true' or 'false'."
+  }
+}
+
+variable "install_traefik" {
+  description = "Whether to install Traefik [Installed by default if number of masters more than 1]"
+  type        = string
+  validation {
+    condition     = contains(["true", "false"], var.install_traefik)
+    error_message = "install_traefik must be 'true' or 'false'."
+  }
+}
+
+################################################################################
+################################################################################

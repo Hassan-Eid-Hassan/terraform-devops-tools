@@ -12,7 +12,7 @@
 </h3>
 
 <p align="left">
-    This project contains Terraform code for provisioning DevOps tools and AWS infrastructure, including a VPC, Jenkins, Nexus, Kubernetes, and EKS cluster. The configuration values can be customized using the <strong>terraform.tfvars</strong> file. 
+    This project contains Terraform code for provisioning DevOps tools and AWS infrastructure, including a VPC, Jenkins, Nexus, HA or none-HA Kubernetes, and EKS cluster. The configuration values can be customized using the <strong>terraform.tfvars</strong> file. 
 </p>
 
 
