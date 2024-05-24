@@ -20,6 +20,7 @@
 
 - [Introduction](#introduction)
 - [Navigation](#navigation)
+- [Using Terraform Modules](#using-terraform-modules)
 - [Setup Instructions](#setup-instructions)
 - [Configuration](#configuration)
 - [Usage](#usage)
@@ -48,6 +49,21 @@ The project is organized into several modules and files:
 - **[Nexus Module](modules/nexus)**: Contains the Terraform code for provisioning a Nexus instance.
 - **[Kubernetes Module](modules/kubernetes)**: Contains the Terraform code for creating a Kubernetes cluster.
 - **[EKS Module](modules/eks)**: Contains the Terraform code for creating the EKS cluster and associated resources.
+
+## Using Terraform Modules
+
+You can use the Terraform modules provided in this repository directly in your projects. Additionally, these modules are also available on the [Terraform Registry](https://registry.terraform.io/modules/Hassan-Eid-Hassan/tools/devops/), making it easy to incorporate them into your infrastructure code.
+
+To use a module from the Terraform Registry, simply include it in your Terraform configuration by specifying the module source:
+
+```hcl
+module "example" {
+  source  = "Hassan-Eid-Hassan/tools/devops"
+  version = "<VERSION>-<MODULE>-<CLOUD-PROVIDER>" # example: "1.0.0-kubernetes-aws"
+  
+  # Specify module inputs here
+}
+```
 
 ## Setup Instructions
 
