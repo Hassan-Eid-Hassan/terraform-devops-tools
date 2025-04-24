@@ -177,6 +177,20 @@ To destroy the deployed resources when they are no longer needed.
 terraform destroy
 ```
 
+## 🔐 K8s Tools Credentials
+
+> **⚠️ Security note:**  
+> - Never check real passwords into Git. Use Secrets Manager, Vault or KMS to inject at deploy time.  
+> - The defaults below are for fresh installs; yours may be auto-generated or overridden.
+
+| Service                   | Username | Password retrieval                                                                                           |
+|---------------------------|----------|--------------------------------------------------------------------------------------------------------------|
+| **ArgoCD**                | `admin`  | ```kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" \| base64 --decode && echo```  |
+| **Jenkins**               | `admin`  | ```kubectl exec -it jenkins-pod cat /var/jenkins_home/secrets/initialAdminPassword -n jenkins```    |
+| **SonarQube**             | `admin`  | `admin`                                                                                             |
+| **kube-prom-stack**       | ```kubectl get secret -n monitoring gpa-grafana -o jsonpath="{.data.admin-user}" -o jsonpath="{.data.password}" \| base64 --decode && echo```  | ```kubectl get secret -n monitoring gpa-grafana -o jsonpath="{.data.admin-password}" -o jsonpath="{.data.password}" \| base64 --decode && echo``` |
+| **EFK**<br>(Elasticsearch / Kibana) | `elastic` | ```kubectl -n efk-logging get secret elasticsearch-es-elastic-user -o=jsonpath="{.data.elastic}" \| base64 --decode && echo```                                                                                  |
+
 ## Contributing
 
 Contributions are welcome! Please open an issue or submit a pull request with improvements or bug fixes.

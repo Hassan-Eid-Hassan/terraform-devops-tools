@@ -337,19 +337,19 @@ fi
 if [ ${install_EFK} == "true" ]; then
   runuser -u root -- helm repo add elastic https://helm.elastic.co
   runuser -u root -- helm repo update
-  runuser -u root -- helm install elasticsearch elastic/elasticsearch --namespace elk-logging --create-namespace
+  runuser -u root -- helm install elasticsearch elastic/elasticsearch --namespace efk-logging --create-namespace
   sleep 15
-  runuser -u root -- kubectl scale statefulset elasticsearch-master --replicas=0 -n elk-logging
+  runuser -u root -- kubectl scale statefulset elasticsearch-master --replicas=0 -n efk-logging
   sleep 30
-  runuser -u root -- kubectl get statefulset elasticsearch-master -n elk-logging -o yaml > /tmp/elasticsearch-master.yaml
+  runuser -u root -- kubectl get statefulset elasticsearch-master -n efk-logging -o yaml > /tmp/elasticsearch-master.yaml
   runuser -u root -- sed -i '/volumeClaimTemplates:/,/phase:/d' /tmp/elasticsearch-master.yaml
   runuser -u root -- awk '/volumes:/ && !f {print; print "      - emptyDir: {}\n        name: elasticsearch-master"; f=1; next} 1' /tmp/elasticsearch-master.yaml > /tmp/elasticsearch-master-final.yaml
-  runuser -u root -- kubectl delete statefulset elasticsearch-master -n elk-logging --cascade=orphan
-  runuser -u root -- kubectl apply -f /tmp/elasticsearch-master-final.yaml -n elk-logging
-  runuser -u root -- kubectl scale statefulset elasticsearch-master --replicas=3 -n elk-logging
+  runuser -u root -- kubectl delete statefulset elasticsearch-master -n efk-logging --cascade=orphan
+  runuser -u root -- kubectl apply -f /tmp/elasticsearch-master-final.yaml -n efk-logging
+  runuser -u root -- kubectl scale statefulset elasticsearch-master --replicas=3 -n efk-logging
   sleep 60
-  runuser -u root -- helm install kibana elastic/kibana --namespace elk-logging
-  runuser -u root -- helm install filebeat elastic/filebeat --namespace elk-logging
+  runuser -u root -- helm install kibana elastic/kibana --namespace efk-logging
+  runuser -u root -- helm install filebeat elastic/filebeat --namespace efk-logging
 fi
 if [ ${k8s_number_of_master_nodes} -gt 1 -o ${install_traefik} == "true" ]; then
 sudo cat <<EOF | sudo tee /root/kibana-route.yaml
@@ -357,7 +357,7 @@ apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
   name: kibana-route
-  namespace: elk-logging
+  namespace: efk-logging
 spec:
   entryPoints:
     - web
