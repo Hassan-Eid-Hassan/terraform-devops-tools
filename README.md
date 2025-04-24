@@ -45,9 +45,9 @@ The project is organized into several modules and files:
 ## Navigation
 
 - **[VPC Module](modules/vpc)**: Contains the Terraform code for creating the VPC, subnets, and associated resources.
-- **[Jenkins Module](modules/jenkins)**: Contains the Terraform code for provisioning a Jenkins instance.
-- **[Nexus Module](modules/nexus)**: Contains the Terraform code for provisioning a Nexus instance.
-- **[Kubernetes Module](modules/kubernetes)**: Contains the Terraform code for creating a Kubernetes cluster.
+- **[Jenkins Module](https://github.com/Hassan-Eid-Hassan/terraform-devops-tools/tree/jenkins-module)**: Contains the Terraform code for provisioning a Jenkins instance.
+- **[Nexus Module](https://github.com/Hassan-Eid-Hassan/terraform-devops-tools/tree/nexus-module)**: Contains the Terraform code for provisioning a Nexus instance.
+- **[Kubernetes Module](https://github.com/Hassan-Eid-Hassan/terraform-devops-tools/tree/kubernetes-module)**: Contains the Terraform code for creating a Kubernetes cluster.
 - **[EKS Module](modules/eks)**: Contains the Terraform code for creating the EKS cluster and associated resources.
 
 ## Using Terraform Modules
